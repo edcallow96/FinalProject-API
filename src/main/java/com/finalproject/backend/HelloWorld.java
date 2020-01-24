@@ -6,10 +6,17 @@ import com.amazonaws.services.s3.event.S3EventNotification;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.Charsets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StreamUtils;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.util.function.Function;
+
+import static org.apache.commons.codec.CharEncoding.UTF_8;
 
 @Slf4j
 @Component("awsLambdaS3Function")
@@ -31,9 +38,13 @@ public class HelloWorld implements Function<S3Event, S3Event> {
 
             log.info("Received record with bucket: {}  and key:  {}", s3Bucket ,s3Key);
 
-            S3Object object = amazonS3.getObject(new GetObjectRequest(s3Bucket, s3Key));
-
-            log.info("Retrieved s3 object: {} ", object);
+            try {
+                S3Object object = amazonS3.getObject(s3Bucket, URLDecoder.decode(s3Key, UTF_8));
+                log.info(StreamUtils.copyToString(object.getObjectContent(),  Charsets.UTF_8));
+                log.info("Retrieved s3 object: {} ", object);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
         }
 
