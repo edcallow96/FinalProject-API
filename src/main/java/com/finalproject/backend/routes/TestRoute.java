@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 public class TestRoute extends RouteBuilder {
     @Override
     public void configure() throws Exception {
-        from("direct:test")
-                .log("Camel route reached");
+        from("direct:test").log("Camel route reached");
     }
 }

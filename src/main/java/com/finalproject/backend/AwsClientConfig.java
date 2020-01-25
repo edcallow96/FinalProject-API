@@ -12,17 +12,16 @@ public class AwsClientConfig {
 
     @Bean
     @Profile("default")
-    public AmazonS3 awsS3Client(){
+    public AmazonS3 awsS3Client() {
         return AmazonS3ClientBuilder.standard().withRegion("us-west-2").build();
     }
 
     @Bean
     @Profile("local")
-    public AmazonS3 awsS3ClientLocalStack(){
+    public AmazonS3 awsS3ClientLocalStack() {
         return AmazonS3ClientBuilder.standard()
-                .withEndpointConfiguration(new AwsClientBuilder
-                        .EndpointConfiguration("http://localstack:4572","us-west-1"))
+                .withEndpointConfiguration(
+                        new AwsClientBuilder.EndpointConfiguration("http://localstack:4572", "us-west-1"))
                 .build();
     }
-
 }
