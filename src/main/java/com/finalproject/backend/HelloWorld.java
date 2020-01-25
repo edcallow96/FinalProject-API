@@ -4,10 +4,12 @@ import com.amazonaws.services.lambda.runtime.events.S3Event;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.event.S3EventNotification;
 import com.amazonaws.services.s3.model.S3Object;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.ExchangeBuilder;
+import org.apache.tika.Tika;
 import org.springframework.stereotype.Component;
 
 import java.net.URLDecoder;
@@ -43,8 +45,9 @@ public class HelloWorld implements Function<S3Event, S3Event> {
             log.info("Received record with bucket: {}  and key:  {}", s3Bucket, s3Key);
 
             try {
-                S3Object object = amazonS3.getObject(s3Bucket, URLDecoder.decode(s3Key, UTF_8));
-                log.info("Retrieved s3 object: {} ", object);
+                S3Object object = amazonS3.getObject(s3Bucket, URLDecoder.decode(s3Key, UTF_8));;
+                log.info("Retrieved s3 object: {} ", new ObjectMapper().writeValueAsString(object));
+                log.info("Detected mime type: {}", new Tika().detect(object.getObjectContent()));
                 producerTemplate.send("direct:test", ExchangeBuilder.anExchange(camelContext).build());
             } catch (Exception e) {
                 e.printStackTrace();
