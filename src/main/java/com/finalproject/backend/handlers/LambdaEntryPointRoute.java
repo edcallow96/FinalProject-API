@@ -1,4 +1,4 @@
-package com.finalproject.backend.routes;
+package com.finalproject.backend.handlers;
 
 import com.finalproject.backend.antivirus.VirusDetectedPredicate;
 import com.finalproject.backend.threatremoval.SupportedThreatRemovalTypePredicate;
@@ -24,19 +24,25 @@ public class LambdaEntryPointRoute extends RouteBuilder {
   @Override
   public void configure() {
     //@formatter:off
-        from(ENTRY_POINT_ROUTE)
-            .log(LoggingLevel.INFO, "Received exchange. Uploaded file size: ${body.objectMetadata.contentLength}")
-            .to(FILE_IDENTIFICATION_ROUTE)
-            .filter(supportedThreatRemovalType)
-              .to(THREAT_REMOVAL_ROUTE)
-            .end()
-            .to(ANTI_VIRUS_SCANNING_ROUTE)
-            .choice()
-              .when(virusDetected)
-                .to(SEND_FAILURE_NOTIFICATION)
-              .otherwise()
-                .to(SEND_SUCCESS_NOTIFICATION)
-            .end();
-        //@formatter:on
+
+    onException(Exception.class)
+        .log(LoggingLevel.ERROR, "Exception received ${exception.stacktrace}" )
+        .maximumRedeliveries(1)
+        .redeliveryDelay(0);
+
+    from(ENTRY_POINT_ROUTE)
+        .log(LoggingLevel.INFO, "Received exchange. Uploaded file size: ${body.objectMetadata.contentLength}")
+        .to(FILE_IDENTIFICATION_ROUTE)
+        .filter(supportedThreatRemovalType)
+          .to(THREAT_REMOVAL_ROUTE)
+        .end()
+        .to(ANTI_VIRUS_SCANNING_ROUTE)
+        .choice()
+          .when(virusDetected)
+            .to(SEND_FAILURE_NOTIFICATION)
+            .otherwise()
+              .to(SEND_SUCCESS_NOTIFICATION)
+        .end();
+    //@formatter:on
   }
 }
