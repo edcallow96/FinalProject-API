@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @MockEndpoints
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class BaseRouteTest {
+public abstract class BaseRouteTest {
 
   @EndpointInject("mock:" + ENTRY_POINT_ROUTE)
   protected MockEndpoint mockEntryPointEndpoint;
