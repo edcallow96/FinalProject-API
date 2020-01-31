@@ -1,11 +1,12 @@
 package com.finalproject.backend.fileidentification;
 
-import com.amazonaws.services.s3.model.S3Object;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.tika.mime.MediaType;
 import org.springframework.stereotype.Component;
+
+import java.io.File;
 
 import static com.finalproject.backend.constants.BackendApplicationConstants.FILE_TYPE_HEADER;
 
@@ -21,10 +22,10 @@ public class FileIdentificationProcessor implements Processor {
 
   @Override
   public void process(Exchange exchange) throws Exception {
-    S3Object s3Object = exchange.getIn().getBody(S3Object.class);
-    log.info("Determining the file type of {}", s3Object.getKey());
-    MediaType fileType = fileIdentifier.identifyFile(s3Object.getObjectContent());
-    log.info("The file type of {} is {}", s3Object.getKey(), fileType);
+    File downloadedFile = exchange.getIn().getBody(File.class);
+    log.info("Determining the file type of {}", downloadedFile);
+    MediaType fileType = fileIdentifier.identifyFile(downloadedFile);
+    log.info("The file type of {} is {}", downloadedFile, fileType);
     exchange.getIn().setHeader(FILE_TYPE_HEADER, fileType);
   }
 }

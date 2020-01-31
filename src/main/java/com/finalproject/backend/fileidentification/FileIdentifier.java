@@ -5,8 +5,8 @@ import org.apache.tika.config.TikaConfig;
 import org.apache.tika.mime.MediaType;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 
 @Component
 public class FileIdentifier {
@@ -17,7 +17,7 @@ public class FileIdentifier {
     tika = new Tika(new TikaConfig(this.getClass().getResourceAsStream("/tikaConfig.xml")));
   }
 
-  public MediaType identifyFile(InputStream inputStream) throws IOException {
-    return MediaType.parse(this.tika.detect(inputStream));
+  public MediaType identifyFile(File file) throws IOException {
+    return MediaType.parse(this.tika.detect(file));
   }
 }

@@ -1,12 +1,12 @@
-package com.finalproject.backend;
+package com.finalproject.backend.suite;
 
-import com.finalproject.backend.handlers.LambdaEntryPointRouteShould;
+import com.finalproject.backend.handlers.LambdaEntryPointRouteSuite;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    LambdaEntryPointRouteShould.class
+    LambdaEntryPointRouteSuite.class
 })
 // Test suite to help all tests that require Spring to be run through a single context
 // Saves time in unit tests so that they don't each initialise their own context

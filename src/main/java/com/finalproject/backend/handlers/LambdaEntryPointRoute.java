@@ -31,7 +31,7 @@ public class LambdaEntryPointRoute extends RouteBuilder {
         .redeliveryDelay(0);
 
     from(ENTRY_POINT_ROUTE)
-        .log(LoggingLevel.INFO, "Received exchange. Uploaded file size: ${body.objectMetadata.contentLength}")
+        .log(LoggingLevel.INFO, "Received exchange. Uploaded file size: ${body.length}")
         .to(FILE_IDENTIFICATION_ROUTE)
         .filter(supportedThreatRemovalType)
           .to(THREAT_REMOVAL_ROUTE)

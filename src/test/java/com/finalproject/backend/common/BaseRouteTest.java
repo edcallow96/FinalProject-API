@@ -4,6 +4,7 @@ import com.amazonaws.services.lambda.runtime.events.S3Event;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.event.S3EventNotification;
 import com.amazonaws.services.s3.model.S3Object;
+import com.finalproject.backend.ApplicationProperties;
 import com.finalproject.backend.fileidentification.FileIdentificationProcessor;
 import com.finalproject.backend.handlers.FinalProjectLambdaFunction;
 import org.apache.camel.EndpointInject;
@@ -16,7 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 
@@ -29,6 +32,7 @@ import static org.mockito.Mockito.when;
 @RunWith(CamelSpringBootRunner.class)
 @SpringBootTest
 @MockEndpoints
+@ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public abstract class BaseRouteTest {
 
@@ -44,6 +48,9 @@ public abstract class BaseRouteTest {
   @Autowired
   protected FinalProjectLambdaFunction finalProjectLambdaFunction;
 
+  @Autowired
+  protected ApplicationProperties applicationProperties;
+
   @MockBean
   protected AmazonS3 amazonS3;
 
@@ -54,8 +61,12 @@ public abstract class BaseRouteTest {
 
   @Before
   public void setUp() throws IOException {
-    when(amazonS3.getObject(anyString(), anyString())).thenReturn(new S3Object());
     S3EventNotification s3EventNotification = S3Event.parseJson(readFileToString(new File("src/test/resources/event.json"), UTF_8));
     s3Event = new S3Event(s3EventNotification.getRecords());
+    S3EventNotification.S3ObjectEntity s3ObjectEntity = s3EventNotification.getRecords().get(0).getS3().getObject();
+    S3Object s3Object = new S3Object();
+    s3Object.setKey(s3ObjectEntity.getKey());
+    s3Object.setObjectContent(new ByteArrayInputStream(new byte[]{}));
+    when(amazonS3.getObject(anyString(), anyString())).thenReturn(s3Object);
   }
 }
