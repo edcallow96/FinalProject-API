@@ -7,8 +7,6 @@ import org.apache.camel.Processor;
 import org.apache.tika.mime.MediaType;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-
 @Component
 @Slf4j
 public class FileIdentificationProcessor implements Processor {
@@ -21,11 +19,10 @@ public class FileIdentificationProcessor implements Processor {
 
   @Override
   public void process(Exchange exchange) throws Exception {
-    File downloadedFile = exchange.getIn().getBody(File.class);
     Job job = exchange.getIn().getBody(Job.class);
-    log.info("Determining the file type of {}", downloadedFile);
-    MediaType fileType = fileIdentifier.identifyFile(downloadedFile);
-    log.info("The file type of {} is {}", downloadedFile, fileType);
+    log.info("Determining the file type of {}", job.getPayloadLocation());
+    MediaType fileType = fileIdentifier.identifyFile(job.getPayloadLocation());
+    log.info("The file type of {} is {}", job.getPayloadLocation(), fileType);
     job.setContentType(fileType);
   }
 }
