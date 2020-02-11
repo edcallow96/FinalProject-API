@@ -1,6 +1,6 @@
 package com.finalproject.backend.handlers;
 
-import com.finalproject.backend.antivirus.VirusDetectedPredicate;
+import com.finalproject.backend.antivirus.ThreadDetectedPredicate;
 import com.finalproject.backend.threatremoval.SupportedThreatRemovalTypePredicate;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
@@ -12,13 +12,16 @@ import static com.finalproject.backend.constants.BackendApplicationConstants.*;
 public class LambdaEntryPointRoute extends RouteBuilder {
 
   private final SupportedThreatRemovalTypePredicate supportedThreatRemovalType;
-  private final VirusDetectedPredicate virusDetected;
+  private final ThreadDetectedPredicate threatDetected;
+  private final JobPrepareProcessor jobPrepareProcessor;
 
   public LambdaEntryPointRoute(
       final SupportedThreatRemovalTypePredicate supportedThreatRemovalType,
-      final VirusDetectedPredicate virusDetected) {
+      final ThreadDetectedPredicate threatDetected,
+      final JobPrepareProcessor jobPrepareProcessor) {
     this.supportedThreatRemovalType = supportedThreatRemovalType;
-    this.virusDetected = virusDetected;
+    this.threatDetected = threatDetected;
+    this.jobPrepareProcessor = jobPrepareProcessor;
   }
 
   @Override
@@ -26,19 +29,22 @@ public class LambdaEntryPointRoute extends RouteBuilder {
     //@formatter:off
 
     onException(Exception.class)
-        .log(LoggingLevel.ERROR, "Exception received ${exception.stacktrace}" )
-        .maximumRedeliveries(1)
-        .redeliveryDelay(0);
+        .log(LoggingLevel.ERROR, "Exception received ${exception.message}" )
+        .log(LoggingLevel.DEBUG, "${exception.stacktrace}")
+        .handled(true)
+        .maximumRedeliveries(3)
+        .redeliveryDelay(0)
+        .log("Maximum redelivery attempted, failing job");
 
     from(ENTRY_POINT_ROUTE)
-        .log(LoggingLevel.INFO, "Received exchange. Uploaded file size: ${body.length}")
+        .process(jobPrepareProcessor)
         .to(FILE_IDENTIFICATION_ROUTE)
         .filter(supportedThreatRemovalType)
           .to(THREAT_REMOVAL_ROUTE)
         .end()
         .to(ANTI_VIRUS_SCANNING_ROUTE)
         .choice()
-          .when(virusDetected)
+          .when(threatDetected)
             .to(SEND_FAILURE_NOTIFICATION)
             .otherwise()
               .to(SEND_SUCCESS_NOTIFICATION)

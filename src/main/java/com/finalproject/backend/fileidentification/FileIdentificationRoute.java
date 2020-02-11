@@ -17,7 +17,7 @@ public class FileIdentificationRoute extends RouteBuilder {
   }
 
   @Override
-  public void configure() throws Exception {
+  public void configure() {
     //formatter:off
     onException(Exception.class)
         .log(ERROR, "Exception occurred during file identification. ${exception.message}")
