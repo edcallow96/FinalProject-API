@@ -5,7 +5,7 @@ import org.apache.camel.Predicate;
 import org.springframework.stereotype.Component;
 
 @Component
-public class VirusDetectedPredicate implements Predicate {
+public class ThreadDetectedPredicate implements Predicate {
   @Override
   public boolean matches(Exchange exchange) {
     return false;

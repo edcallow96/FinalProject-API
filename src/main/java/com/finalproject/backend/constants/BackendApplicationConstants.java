@@ -13,5 +13,5 @@ public class BackendApplicationConstants {
   public static final String SEND_SUCCESS_NOTIFICATION = "direct:sendSuccessNotification";
 
   // Exchange Headers
-  public static final String FILE_TYPE_HEADER = "fileTypeHeader";
+  public static final String AMAZON_REQUEST_ID = "amazonRequestId";
 }

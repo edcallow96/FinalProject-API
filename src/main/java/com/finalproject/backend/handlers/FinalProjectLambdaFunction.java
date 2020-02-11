@@ -9,15 +9,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.ExchangeBuilder;
-import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.net.URLDecoder;
 import java.util.function.Function;
 
+import static com.finalproject.backend.constants.BackendApplicationConstants.AMAZON_REQUEST_ID;
 import static com.finalproject.backend.constants.BackendApplicationConstants.ENTRY_POINT_ROUTE;
-import static org.apache.commons.codec.CharEncoding.UTF_8;
 
 @Slf4j
 @Component("lambdaFunctionHandler")
@@ -44,20 +41,20 @@ public class FinalProjectLambdaFunction implements Function<S3Event, S3Event> {
 
     log.info("S3 Event processing starts with record: {}", s3Event.toJson());
 
-    // For each record.
     for (S3EventNotification.S3EventNotificationRecord record : s3Event.getRecords()) {
-
       String s3Key = record.getS3().getObject().getKey();
       String s3Bucket = record.getS3().getBucket().getName();
-
       log.info("Received record with bucket: {}  and key:  {}", s3Bucket, s3Key);
 
       try {
-        //TODO - refactor download into separate component
-        S3Object s3Object = amazonS3.getObject(s3Bucket, URLDecoder.decode(s3Key, UTF_8));
-        File downloadedFile = applicationProperties.getDownloadDirectory().resolve(s3Object.getKey()).toFile();
-        FileUtils.copyInputStreamToFile(s3Object.getObjectContent(), downloadedFile);
-        producerTemplate.send(ENTRY_POINT_ROUTE, ExchangeBuilder.anExchange(camelContext).withBody(downloadedFile).build());
+        S3Object s3Object = amazonS3.getObject(s3Bucket, record.getS3().getObject().getUrlDecodedKey());
+        producerTemplate.send(ENTRY_POINT_ROUTE,
+            ExchangeBuilder
+                .anExchange(camelContext)
+                .withBody(s3Object)
+                .withHeader(AMAZON_REQUEST_ID, record.getResponseElements().getxAmzRequestId())
+                .build()
+        );
       } catch (Exception e) {
         e.printStackTrace();
       }
