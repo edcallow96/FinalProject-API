@@ -13,15 +13,15 @@ public class LambdaEntryPointRoute extends RouteBuilder {
 
   private final SupportedThreatRemovalTypePredicate supportedThreatRemovalType;
   private final ThreadDetectedPredicate threatDetected;
-  private final JobPrepareProcessor jobPrepareProcessor;
+  private final PrepareJobProcessor prepareJobProcessor;
 
   public LambdaEntryPointRoute(
       final SupportedThreatRemovalTypePredicate supportedThreatRemovalType,
       final ThreadDetectedPredicate threatDetected,
-      final JobPrepareProcessor jobPrepareProcessor) {
+      final PrepareJobProcessor prepareJobProcessor) {
     this.supportedThreatRemovalType = supportedThreatRemovalType;
     this.threatDetected = threatDetected;
-    this.jobPrepareProcessor = jobPrepareProcessor;
+    this.prepareJobProcessor = prepareJobProcessor;
   }
 
   @Override
@@ -37,7 +37,7 @@ public class LambdaEntryPointRoute extends RouteBuilder {
         .log("Maximum redelivery attempted, failing job");
 
     from(ENTRY_POINT_ROUTE)
-        .process(jobPrepareProcessor)
+        .process(prepareJobProcessor)
         .to(FILE_IDENTIFICATION_ROUTE)
         .filter(supportedThreatRemovalType)
           .to(THREAT_REMOVAL_ROUTE)

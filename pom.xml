@@ -75,6 +75,12 @@
             <version>${aws.sdk.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-ses</artifactId>
+            <version>${aws.sdk.version}</version>
+        </dependency>
+
         <!--Logging-->
         <dependency>
             <groupId>org.slf4j</groupId>

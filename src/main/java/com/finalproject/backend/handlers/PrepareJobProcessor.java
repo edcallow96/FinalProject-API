@@ -18,11 +18,11 @@ import static com.finalproject.backend.constants.BackendApplicationConstants.AMA
 
 @Component
 @Slf4j
-public class JobPrepareProcessor implements Processor {
+public class PrepareJobProcessor implements Processor {
 
   private final ApplicationProperties applicationProperties;
 
-  public JobPrepareProcessor(final ApplicationProperties applicationProperties) {
+  public PrepareJobProcessor(final ApplicationProperties applicationProperties) {
     this.applicationProperties = applicationProperties;
   }
 
