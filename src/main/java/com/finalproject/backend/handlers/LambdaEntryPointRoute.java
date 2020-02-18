@@ -31,13 +31,14 @@ public class LambdaEntryPointRoute extends RouteBuilder {
     onException(Exception.class)
         .log(LoggingLevel.ERROR, "Exception received ${exception.message}" )
         .log(LoggingLevel.DEBUG, "${exception.stacktrace}")
-        .handled(true)
-        .maximumRedeliveries(3)
-        .redeliveryDelay(0)
-        .log("Maximum redelivery attempted, failing job");
+        .handled(true);
 
     from(ENTRY_POINT_ROUTE)
         .process(prepareJobProcessor)
+        .to(PROCESS_JOB)
+        .end();
+
+    from(PROCESS_JOB)
         .to(FILE_IDENTIFICATION_ROUTE)
         .filter(supportedThreatRemovalType)
           .to(THREAT_REMOVAL_ROUTE)
@@ -46,9 +47,10 @@ public class LambdaEntryPointRoute extends RouteBuilder {
         .choice()
           .when(threatDetected)
             .to(SEND_FAILURE_NOTIFICATION)
-            .otherwise()
-              .to(SEND_SUCCESS_NOTIFICATION)
+          .otherwise()
+            .to(SEND_SUCCESS_NOTIFICATION)
         .end();
+
     //@formatter:on
   }
 }

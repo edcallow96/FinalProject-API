@@ -11,6 +11,7 @@ public class BackendApplicationConstants {
   public static final String ANTI_VIRUS_SCANNING_ROUTE = "direct:avScanningRoute";
   public static final String SEND_FAILURE_NOTIFICATION = "direct:sendFailureNotification";
   public static final String SEND_SUCCESS_NOTIFICATION = "direct:sendSuccessNotification";
+  public static final String PROCESS_JOB = "direct:processJob";
 
   // Exchange Headers
   public static final String AMAZON_REQUEST_ID = "amazonRequestId";
