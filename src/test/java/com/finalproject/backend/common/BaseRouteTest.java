@@ -2,12 +2,13 @@ package com.finalproject.backend.common;
 
 import com.amazonaws.services.lambda.runtime.events.S3Event;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.event.S3EventNotification;
-import com.amazonaws.services.s3.model.S3Object;
-import com.finalproject.backend.ApplicationProperties;
 import com.finalproject.backend.fileidentification.FileIdentificationProcessor;
-import com.finalproject.backend.handlers.FinalProjectLambdaFunction;
+import com.finalproject.backend.handlers.PrepareJobProcessor;
+import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
+import org.apache.camel.Exchange;
+import org.apache.camel.ProducerTemplate;
+import org.apache.camel.builder.ExchangeBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.MockEndpoints;
@@ -19,15 +20,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 
 import static com.finalproject.backend.constants.BackendApplicationConstants.*;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.commons.io.FileUtils.readFileToString;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 
 @RunWith(CamelSpringBootRunner.class)
 @SpringBootTest
@@ -45,11 +40,14 @@ public abstract class BaseRouteTest {
   @EndpointInject("mock:" + SEND_SUCCESS_NOTIFICATION)
   protected MockEndpoint mockSendSuccessNotificationEndpoint;
 
-  @Autowired
-  protected FinalProjectLambdaFunction finalProjectLambdaFunction;
+  @EndpointInject("mock:" + PROCESS_JOB)
+  protected MockEndpoint mockProcessJobEndpoint;
 
   @Autowired
-  protected ApplicationProperties applicationProperties;
+  protected ProducerTemplate templateProducer;
+
+  @Autowired
+  protected CamelContext camelContext;
 
   @MockBean
   protected AmazonS3 amazonS3;
@@ -57,16 +55,15 @@ public abstract class BaseRouteTest {
   @MockBean
   protected FileIdentificationProcessor fileIdentificationProcessor;
 
+  @MockBean
+  protected PrepareJobProcessor prepareJobProcessor;
+
   protected S3Event s3Event;
+
+  protected Exchange exchange;
 
   @Before
   public void setUp() throws IOException {
-    S3EventNotification s3EventNotification = S3Event.parseJson(readFileToString(new File("src/test/resources/event.json"), UTF_8));
-    s3Event = new S3Event(s3EventNotification.getRecords());
-    S3EventNotification.S3ObjectEntity s3ObjectEntity = s3EventNotification.getRecords().get(0).getS3().getObject();
-    S3Object s3Object = new S3Object();
-    s3Object.setKey(s3ObjectEntity.getKey());
-    s3Object.setObjectContent(new ByteArrayInputStream(new byte[]{}));
-    when(amazonS3.getObject(anyString(), anyString())).thenReturn(s3Object);
+    exchange = ExchangeBuilder.anExchange(camelContext).build();
   }
 }

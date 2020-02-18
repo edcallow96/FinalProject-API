@@ -1,33 +1,40 @@
 package com.finalproject.backend.handlers;
 
 import com.finalproject.backend.common.BaseRouteTest;
-import org.apache.camel.Exchange;
 import org.junit.Test;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static com.finalproject.backend.constants.BackendApplicationConstants.ENTRY_POINT_ROUTE;
+import static org.mockito.Mockito.verify;
 
 public class LambdaEntryPointRouteSuite extends BaseRouteTest {
 
   @Test
-  public void sendExchangeToEntryPointRoute() throws Exception {
-    mockEntryPointEndpoint.setExpectedCount(1);
-    mockSendSuccessNotificationEndpoint.setExpectedCount(1);
+  public void jobIsSentToBeProcessed() throws Exception {
+    mockProcessJobEndpoint.setExpectedCount(1);
 
-    finalProjectLambdaFunction.apply(s3Event);
+    templateProducer.send(ENTRY_POINT_ROUTE, exchange);
 
-    mockEntryPointEndpoint.assertIsSatisfied();
-    mockSendSuccessNotificationEndpoint.assertIsSatisfied();
+    mockProcessJobEndpoint.assertIsSatisfied();
+    verify(prepareJobProcessor).process(exchange);
   }
 
   @Test
-  public void retryFailuresDuringFileIdentification() throws Exception {
-    doThrow(new RuntimeException()).when(fileIdentificationProcessor).process(any(Exchange.class));
-    mockFileIdentificationEndpoint.setExpectedCount(1);
+  public void jobIsSentForFileIdentification() throws InterruptedException {
+    mockProcessJobEndpoint.setExpectedCount(1);
 
-    finalProjectLambdaFunction.apply(s3Event);
+    templateProducer.send(ENTRY_POINT_ROUTE, exchange);
 
     mockFileIdentificationEndpoint.assertIsSatisfied();
-    verify(fileIdentificationProcessor, times(4)).process(any(Exchange.class));
+    verify(fileIdentificationProcessor).process(exchange);
   }
+
+  @Test
+  public void jobSendsSuccessNotification() throws InterruptedException {
+    mockSendSuccessNotificationEndpoint.setExpectedCount(1);
+
+    templateProducer.send(ENTRY_POINT_ROUTE, exchange);
+
+    mockSendSuccessNotificationEndpoint.assertIsSatisfied();
+  }
+
 }
