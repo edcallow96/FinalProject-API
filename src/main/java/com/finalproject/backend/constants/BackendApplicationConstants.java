@@ -15,4 +15,7 @@ public class BackendApplicationConstants {
 
   // Exchange Headers
   public static final String AMAZON_REQUEST_ID = "amazonRequestId";
+
+  //AWS Metadata header
+  public static final String AMZ_METADATA_USER_ID = "userId";
 }

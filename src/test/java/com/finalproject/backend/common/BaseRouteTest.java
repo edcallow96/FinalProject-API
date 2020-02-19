@@ -1,5 +1,6 @@
 package com.finalproject.backend.common;
 
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.lambda.runtime.events.S3Event;
 import com.amazonaws.services.s3.AmazonS3;
 import com.finalproject.backend.fileidentification.FileIdentificationProcessor;
@@ -51,6 +52,9 @@ public abstract class BaseRouteTest {
 
   @MockBean
   protected AmazonS3 amazonS3;
+
+  @MockBean(name = "amazonDynamoDB")
+  protected AmazonDynamoDB amazonDynamoDB;
 
   @MockBean
   protected FileIdentificationProcessor fileIdentificationProcessor;
