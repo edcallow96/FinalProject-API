@@ -88,6 +88,12 @@
             <version>${aws.sdk.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-dynamodb</artifactId>
+            <version>${aws.sdk.version}</version>
+        </dependency>
+
 
         <!-- Logging libraries-->
 

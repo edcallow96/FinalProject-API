@@ -8,10 +8,11 @@ import org.springframework.stereotype.Component;
 import java.nio.file.Path;
 
 @ConfigurationProperties
-@Component
 @Getter
 @Setter
+@Component
 public class ApplicationProperties {
   private String deepSecureApiKey;
   private Path downloadDirectory;
+  private String awsRegion;
 }
