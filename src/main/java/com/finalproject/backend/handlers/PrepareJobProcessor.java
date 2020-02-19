@@ -1,13 +1,10 @@
 package com.finalproject.backend.handlers;
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
-import com.amazonaws.services.dynamodbv2.document.DynamoDB;
-import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.s3.model.S3Object;
 import com.finalproject.backend.ApplicationProperties;
 import com.finalproject.backend.model.ProcessJob;
-import com.finalproject.backend.model.User;
+import com.finalproject.backend.userservice.UserNotFoundException;
+import com.finalproject.backend.userservice.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -27,13 +24,11 @@ import static com.finalproject.backend.constants.BackendApplicationConstants.AMZ
 public class PrepareJobProcessor implements Processor {
 
   private final ApplicationProperties applicationProperties;
+  private final UserRepository userRepository;
 
-  private final AmazonDynamoDB amazonDynamoDB;
-
-  public PrepareJobProcessor(final ApplicationProperties applicationProperties,
-                             final AmazonDynamoDB amazonDynamoDB) {
+  public PrepareJobProcessor(final ApplicationProperties applicationProperties, final UserRepository userRepository) {
     this.applicationProperties = applicationProperties;
-    this.amazonDynamoDB = amazonDynamoDB;
+    this.userRepository = userRepository;
   }
 
   @Override
@@ -55,21 +50,15 @@ public class PrepareJobProcessor implements Processor {
     return downloadedFile;
   }
 
-  private ProcessJob buildJob(String amazonRequestId, File downloadedFile, S3Object s3Object) {
+  private ProcessJob buildJob(String amazonRequestId, File downloadedFile, S3Object s3Object) throws UserNotFoundException {
     String userId = s3Object.getObjectMetadata().getUserMetaDataOf(AMZ_METADATA_USER_ID);
     return ProcessJob.builder()
         .jobId(amazonRequestId)
         .payloadLocation(downloadedFile)
         .sourceBucket(s3Object.getBucketName())
         .sourceKey(s3Object.getKey())
-        .user(getUser(userId))
+        .user(userRepository.findById(userId).orElseThrow(() ->
+            new UserNotFoundException(String.format("User %s does not exist in User Service", userId))))
         .build();
-  }
-
-  private User getUser(String userId) {
-    DynamoDB dynamoDB = new DynamoDB(amazonDynamoDB);
-    Table table = dynamoDB.getTable("UserTable");
-    Item item = table.getItem("userId", userId);
-    return User.builder().userId(userId).emailAddress((String) item.get("emailAddress")).build();
   }
 }

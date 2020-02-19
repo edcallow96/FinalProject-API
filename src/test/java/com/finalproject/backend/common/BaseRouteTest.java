@@ -53,7 +53,7 @@ public abstract class BaseRouteTest {
   @MockBean
   protected AmazonS3 amazonS3;
 
-  @MockBean
+  @MockBean(name = "amazonDynamoDB")
   protected AmazonDynamoDB amazonDynamoDB;
 
   @MockBean
