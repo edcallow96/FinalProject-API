@@ -9,7 +9,6 @@ import org.apache.tika.mime.MediaType;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.io.IOException;
 
 import static com.finalproject.backend.model.ProcessName.FILE_IDENTIFICATION;
 import static com.finalproject.backend.model.ProcessStatus.FAILED;
@@ -57,7 +56,7 @@ public class FileIdentificationProcessor extends PayloadProcessor {
         .build());
   }
 
-  private MediaType identifyFileType(File payloadLocation) throws IOException {
+  private MediaType identifyFileType(File payloadLocation) throws FileIdentificationException {
     log.info("Determining the file type of {}", payloadLocation);
     MediaType fileType = fileIdentifier.identifyFile(payloadLocation);
     log.info("The file type of {} is {}", payloadLocation, fileType);
