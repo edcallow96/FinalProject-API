@@ -5,6 +5,7 @@ import com.amazonaws.services.lambda.runtime.events.S3Event;
 import com.amazonaws.services.s3.AmazonS3;
 import com.finalproject.backend.fileidentification.FileIdentificationProcessor;
 import com.finalproject.backend.handlers.PrepareJobProcessor;
+import com.finalproject.backend.model.ProcessJob;
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
@@ -21,9 +22,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.io.IOException;
-
 import static com.finalproject.backend.constants.BackendApplicationConstants.*;
+import static org.mockito.Mockito.doAnswer;
 
 @RunWith(CamelSpringBootRunner.class)
 @SpringBootTest
@@ -40,6 +40,9 @@ public abstract class BaseRouteTest {
 
   @EndpointInject("mock:" + SEND_SUCCESS_NOTIFICATION)
   protected MockEndpoint mockSendSuccessNotificationEndpoint;
+
+  @EndpointInject("mock:" + SEND_FAILURE_NOTIFICATION)
+  protected MockEndpoint mockSendFailureNotificationEndpoint;
 
   @EndpointInject("mock:" + PROCESS_JOB)
   protected MockEndpoint mockProcessJobEndpoint;
@@ -67,7 +70,11 @@ public abstract class BaseRouteTest {
   protected Exchange exchange;
 
   @Before
-  public void setUp() throws IOException {
+  public void setUp() throws Exception {
     exchange = ExchangeBuilder.anExchange(camelContext).build();
+    doAnswer((invocation) -> {
+      exchange.getIn().setBody(ProcessJob.builder().build());
+      return null;
+    }).when(prepareJobProcessor).process(exchange);
   }
 }

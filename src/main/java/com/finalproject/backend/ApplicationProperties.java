@@ -11,6 +11,8 @@ import java.nio.file.Path;
 @Setter
 public class ApplicationProperties {
   private String deepSecureApiKey;
+  private String deepSecureEndpoint;
+
   private Path downloadDirectory;
   private String awsRegion;
 }
