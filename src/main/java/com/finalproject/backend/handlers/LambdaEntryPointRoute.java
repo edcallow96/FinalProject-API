@@ -1,27 +1,23 @@
 package com.finalproject.backend.handlers;
 
-import com.finalproject.backend.antivirus.ThreadDetectedPredicate;
-import com.finalproject.backend.threatremoval.SupportedThreatRemovalTypePredicate;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
 import static com.finalproject.backend.constants.BackendApplicationConstants.*;
+import static org.apache.camel.support.builder.PredicateBuilder.not;
 
 @Component
 public class LambdaEntryPointRoute extends RouteBuilder {
 
-  private final SupportedThreatRemovalTypePredicate supportedThreatRemovalType;
-  private final ThreadDetectedPredicate threatDetected;
   private final PrepareJobProcessor prepareJobProcessor;
+  private final JobFailedPredicate jobFailedPredicate;
 
   public LambdaEntryPointRoute(
-      final SupportedThreatRemovalTypePredicate supportedThreatRemovalType,
-      final ThreadDetectedPredicate threatDetected,
-      final PrepareJobProcessor prepareJobProcessor) {
-    this.supportedThreatRemovalType = supportedThreatRemovalType;
-    this.threatDetected = threatDetected;
+      final PrepareJobProcessor prepareJobProcessor,
+      final JobFailedPredicate jobFailedPredicate) {
     this.prepareJobProcessor = prepareJobProcessor;
+    this.jobFailedPredicate = jobFailedPredicate;
   }
 
   @Override
@@ -36,21 +32,21 @@ public class LambdaEntryPointRoute extends RouteBuilder {
     from(ENTRY_POINT_ROUTE)
         .process(prepareJobProcessor)
         .to(PROCESS_JOB)
-        .end();
-
-    from(PROCESS_JOB)
-        .to(FILE_IDENTIFICATION_ROUTE)
-        .filter(supportedThreatRemovalType)
-          .to(THREAT_REMOVAL_ROUTE)
-        .end()
-        .to(ANTI_VIRUS_SCANNING_ROUTE)
         .choice()
-          .when(threatDetected)
+          .when(jobFailedPredicate)
             .to(SEND_FAILURE_NOTIFICATION)
           .otherwise()
             .to(SEND_SUCCESS_NOTIFICATION)
         .end();
 
+    from(PROCESS_JOB)
+        .to(FILE_IDENTIFICATION_ROUTE)
+        .filter(not(jobFailedPredicate))
+          .to(THREAT_REMOVAL_ROUTE)
+        .end()
+        .filter(not(jobFailedPredicate))
+          .to(ANTI_VIRUS_SCANNING_ROUTE)
+        .end();
     //@formatter:on
   }
 }

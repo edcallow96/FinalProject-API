@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.FileUtils.readFileToString;
@@ -23,7 +22,7 @@ public class FinalProjectLambdaFunctionRouteSuite extends BaseRouteTest {
   protected FinalProjectLambdaFunction finalProjectLambdaFunction;
 
   @Before
-  public void setUp() throws IOException {
+  public void setUp() throws Exception {
     super.setUp();
     S3EventNotification s3EventNotification = S3Event.parseJson(readFileToString(new File("src/test/resources/event.json"), UTF_8));
     s3Event = new S3Event(s3EventNotification.getRecords());
