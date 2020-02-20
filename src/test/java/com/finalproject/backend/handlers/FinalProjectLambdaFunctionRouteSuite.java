@@ -36,12 +36,10 @@ public class FinalProjectLambdaFunctionRouteSuite extends BaseRouteTest {
   @Test
   public void exchangeIsSentToEntryPointRoute() throws Exception {
     mockEntryPointEndpoint.setExpectedCount(1);
-    mockSendSuccessNotificationEndpoint.setExpectedCount(1);
 
     finalProjectLambdaFunction.apply(s3Event);
 
     mockEntryPointEndpoint.assertIsSatisfied();
-    mockSendSuccessNotificationEndpoint.assertIsSatisfied();
   }
 
 }

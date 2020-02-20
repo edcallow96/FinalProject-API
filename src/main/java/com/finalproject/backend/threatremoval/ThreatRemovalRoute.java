@@ -20,11 +20,13 @@ public class ThreatRemovalRoute extends RouteBuilder {
 
   @Override
   public void configure() {
+    //@formatter:off
     from(THREAT_REMOVAL_ROUTE)
         .routeId(THREAT_REMOVAL.name())
         .log("Threat removal")
         .filter(supportedThreatRemovalType)
-        .process(threatRemovalProcessor)
+          .process(threatRemovalProcessor)
         .end();
+    //@formatter:on
   }
 }

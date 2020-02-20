@@ -34,6 +34,7 @@ public class ThreatRemovalProcessor extends PayloadProcessor {
     headers.add("Accept", processJob.getContentType().toString() + "," + APPLICATION_JSON);
     headers.add("Content-Type", processJob.getContentType().toString());
     headers.add("x-api-key", applicationProperties.getDeepSecureApiKey());
+    headers.add("X-Accept-Preview-Mode-For-Content-Types", processJob.getContentType().toString());
     HttpEntity<FileSystemResource> httpEntity = new HttpEntity<>(new FileSystemResource(processJob.getPayloadLocation()), headers);
     RestTemplate restTemplate = new RestTemplate();
     ResponseEntity<Resource> responseEntity =
