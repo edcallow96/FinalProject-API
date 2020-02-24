@@ -27,7 +27,6 @@ public class FileIdentificationRoute extends RouteBuilder {
     from(FILE_IDENTIFICATION_ROUTE)
         .routeId(FILE_IDENTIFICATION.name())
         .process(fileIdentificationProcessor)
-        .log("${body}")
         .end();
     //formatter:on
   }

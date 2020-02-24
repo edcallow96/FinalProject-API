@@ -32,6 +32,7 @@ public class LambdaEntryPointRoute extends RouteBuilder {
     from(ENTRY_POINT_ROUTE)
         .process(prepareJobProcessor)
         .to(PROCESS_JOB)
+        .log("${body}")
         .choice()
           .when(jobFailedPredicate)
             .to(SEND_FAILURE_NOTIFICATION)
