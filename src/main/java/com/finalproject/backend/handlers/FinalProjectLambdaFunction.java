@@ -4,7 +4,6 @@ import com.amazonaws.services.lambda.runtime.events.S3Event;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.event.S3EventNotification;
 import com.amazonaws.services.s3.model.S3Object;
-import com.finalproject.backend.ApplicationProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
@@ -23,17 +22,14 @@ public class FinalProjectLambdaFunction implements Function<S3Event, S3Event> {
   private AmazonS3 amazonS3;
   private ProducerTemplate producerTemplate;
   private CamelContext camelContext;
-  private ApplicationProperties applicationProperties;
 
   public FinalProjectLambdaFunction(
       final AmazonS3 amazonS3,
       final ProducerTemplate producerTemplate,
-      final CamelContext camelContext,
-      final ApplicationProperties applicationProperties) {
+      final CamelContext camelContext) {
     this.amazonS3 = amazonS3;
     this.producerTemplate = producerTemplate;
     this.camelContext = camelContext;
-    this.applicationProperties = applicationProperties;
   }
 
   @Override
