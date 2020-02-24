@@ -20,4 +20,11 @@ public class User {
 
   @DynamoDBAttribute
   private String emailAddress;
+
+  @DynamoDBAttribute
+  private String firstName;
+
+  @DynamoDBAttribute
+  private String lastName;
+
 }
