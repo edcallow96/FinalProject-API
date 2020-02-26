@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.net.URI;
 import java.nio.file.Path;
 
 @ConfigurationProperties
@@ -11,8 +12,13 @@ import java.nio.file.Path;
 @Setter
 public class ApplicationProperties {
   private String deepSecureApiKey;
-  private String deepSecureEndpoint;
+  private URI deepSecureEndpoint;
 
   private Path downloadDirectory;
   private String awsRegion;
+
+  private URI metaDefenderEndpoint;
+  private String metaDefenderApiKey;
+  private int metaDefenderPollingDelay;
+  private int metaDefenderPollingTimeout;
 }
