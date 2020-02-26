@@ -41,7 +41,7 @@ public class FileIdentificationProcessor extends PayloadProcessor {
 
   @Override
   protected void succeedCurrentJob(ProcessJob currentProcessJob) {
-    log.error("Succeeding file identification for job {}", currentProcessJob.getJobId());
+    log.info("Succeeding file identification for job {}", currentProcessJob.getJobId());
     currentProcessJob.getProcessingResults().add(ProcessResult.builder()
         .processName(FILE_IDENTIFICATION)
         .processStatus(SUCCESS)

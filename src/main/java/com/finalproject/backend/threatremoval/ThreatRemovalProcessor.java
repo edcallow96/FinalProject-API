@@ -55,7 +55,7 @@ public class ThreatRemovalProcessor extends PayloadProcessor {
 
   @Override
   protected void succeedCurrentJob(ProcessJob currentProcessJob) {
-    log.error("Succeeding threat removal for job {}", currentProcessJob.getJobId());
+    log.info("Succeeding threat removal for job {}", currentProcessJob.getJobId());
     currentProcessJob.getProcessingResults().add(ProcessResult.builder()
         .processName(THREAT_REMOVAL)
         .processStatus(SUCCESS)

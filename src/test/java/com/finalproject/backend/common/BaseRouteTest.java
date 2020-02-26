@@ -3,6 +3,7 @@ package com.finalproject.backend.common;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.lambda.runtime.events.S3Event;
 import com.amazonaws.services.s3.AmazonS3;
+import com.finalproject.backend.antivirus.AntiVirusProcessor;
 import com.finalproject.backend.fileidentification.FileIdentificationProcessor;
 import com.finalproject.backend.handlers.PrepareJobProcessor;
 import com.finalproject.backend.model.ProcessJob;
@@ -61,6 +62,9 @@ public abstract class BaseRouteTest {
 
   @MockBean
   protected FileIdentificationProcessor fileIdentificationProcessor;
+
+  @MockBean
+  protected AntiVirusProcessor antiVirusProcessor;
 
   @MockBean
   protected PrepareJobProcessor prepareJobProcessor;
