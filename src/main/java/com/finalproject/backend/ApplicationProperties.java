@@ -21,4 +21,10 @@ public class ApplicationProperties {
   private String metaDefenderApiKey;
   private int metaDefenderPollingDelay;
   private int metaDefenderPollingTimeout;
+
+  private String treatedBucketName;
+
+  private int selfSignedUrlExpirationDays;
+
+  private String notificationSenderAddress;
 }

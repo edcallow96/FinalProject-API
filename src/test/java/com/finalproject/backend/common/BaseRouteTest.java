@@ -7,6 +7,8 @@ import com.finalproject.backend.antivirus.AntiVirusProcessor;
 import com.finalproject.backend.fileidentification.FileIdentificationProcessor;
 import com.finalproject.backend.handlers.PrepareJobProcessor;
 import com.finalproject.backend.model.ProcessJob;
+import com.finalproject.backend.notification.SuccessNotificationProcessor;
+import com.finalproject.backend.notification.UploadTreatedFileProcessor;
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
@@ -68,6 +70,12 @@ public abstract class BaseRouteTest {
 
   @MockBean
   protected PrepareJobProcessor prepareJobProcessor;
+
+  @MockBean
+  protected UploadTreatedFileProcessor uploadTreatedFileProcessor;
+
+  @MockBean
+  protected SuccessNotificationProcessor successNotificationProcessor;
 
   protected S3Event s3Event;
 

@@ -22,6 +22,9 @@ public class ProcessJob {
   private String sourceKey;
   @Builder.Default
   private List<ProcessResult> processingResults = new ArrayList<>();
-
   private User user;
+
+  private String treatedBucketKey;
+  private String originalFileHash;
+  private long originalFileSize;
 }
