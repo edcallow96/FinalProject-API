@@ -11,11 +11,14 @@ public class NotificationRoute extends RouteBuilder {
 
   private final UploadTreatedFileProcessor uploadTreatedFileProcessor;
   private final SuccessNotificationProcessor successNotificationProcessor;
+  private final FailureNotificationProcessor failureNotificationProcessor;
 
   public NotificationRoute(final UploadTreatedFileProcessor uploadTreatedFileProcessor,
-                           final SuccessNotificationProcessor successNotificationProcessor) {
+                           final SuccessNotificationProcessor successNotificationProcessor,
+                           final FailureNotificationProcessor failureNotificationProcessor) {
     this.uploadTreatedFileProcessor = uploadTreatedFileProcessor;
     this.successNotificationProcessor = successNotificationProcessor;
+    this.failureNotificationProcessor = failureNotificationProcessor;
   }
 
   @Override
@@ -28,7 +31,9 @@ public class NotificationRoute extends RouteBuilder {
         .end();
 
     from(SEND_FAILURE_NOTIFICATION)
+        .routeId("jobFailed")
         .log("Failure notification")
+        .process(failureNotificationProcessor)
         .end();
   }
 }
