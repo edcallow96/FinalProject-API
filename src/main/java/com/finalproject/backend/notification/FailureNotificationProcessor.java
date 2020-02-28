@@ -41,7 +41,7 @@ public class FailureNotificationProcessor extends BaseNotificationProcessor {
         h3(format("Original file hash: %s", processJob.getOriginalFileHash())),
         h3(format("Original file size: %s", processJob.getOriginalFileSize())),
         br(),
-        p(format("Your file failed the %s process becuase %s", failedProcess.getProcessName(), failedProcess.getFailureReason()))
+        p(format("Your file failed the %s process because %s", failedProcess.getProcessName(), failedProcess.getFailureReason()))
     ).render();
   }
 }
