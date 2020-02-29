@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import static com.finalproject.backend.model.ProcessName.ANTI_VIRUS_SCAN;
 import static com.finalproject.backend.model.ProcessStatus.FAILED;
 import static com.finalproject.backend.model.ProcessStatus.SUCCESS;
+import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Component
@@ -45,6 +46,7 @@ public class AntiVirusProcessor extends PayloadProcessor {
   protected void processCurrentJob(ProcessJob currentProcessJob) {
     try {
       String dataId = uploadFileForScan(currentProcessJob.getPayloadLocation());
+      log.info("File uploaded for AV scanning with dataId {}", dataId);
       AntiVirusResponse antiVirusResponse = waitForScanToComplete(dataId);
       processAntiVirusResponse(antiVirusResponse, currentProcessJob.getPayloadLocation());
       succeedCurrentJob(currentProcessJob);
@@ -116,6 +118,7 @@ public class AntiVirusProcessor extends PayloadProcessor {
     HttpHeaders headers = new HttpHeaders();
     headers.add("apiKey", applicationProperties.getMetaDefenderApiKey());
     headers.add("filename", payloadLocation.getName());
+    headers.add("content-type", APPLICATION_OCTET_STREAM);
     return new HttpEntity<>(new FileSystemResource(payloadLocation), headers);
   }
 

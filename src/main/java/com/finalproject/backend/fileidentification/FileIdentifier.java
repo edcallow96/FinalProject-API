@@ -29,7 +29,7 @@ public class FileIdentifier {
       checkForFileSpoofing(file, contentType);
       return contentType;
     } catch (IOException e) {
-      throw new FileIdentificationException(String.format("File identification of %s failed.", file), e);
+      throw new FileIdentificationException(String.format("file identification of %s failed.", file), e);
     }
   }
 
@@ -38,10 +38,10 @@ public class FileIdentifier {
       List<String> expectedExtensions = tikaConfig.getMimeRepository().forName(contentType.toString()).getExtensions();
       String fileExtension = "." + getExtension(file.getName());
       if (!expectedExtensions.contains(fileExtension)) {
-        throw new FileIdentificationException(String.format("File %s has spoofed file extension for type %s", file.getName(), contentType));
+        throw new FileIdentificationException(String.format("file %s has spoofed file extension for type %s", file.getName(), contentType));
       }
     } catch (MimeTypeException e) {
-      throw new FileIdentificationException(String.format("File identification of %s failed.", file), e);
+      throw new FileIdentificationException(String.format("file identification of %s failed.", file), e);
     }
   }
 }

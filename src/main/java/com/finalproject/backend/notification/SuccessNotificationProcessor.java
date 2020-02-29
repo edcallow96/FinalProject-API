@@ -56,7 +56,8 @@ public class SuccessNotificationProcessor extends BaseNotificationProcessor {
   private String generateHtmlBody(ProcessJob processJob, URL preSignedUrl) throws Exception {
     return body(
         h1(format("Hello, %s! Here is the link to your processed file:", processJob.getUser().getFirstName())),
-        h2(format("File name: %s", processJob.getPayloadLocation().getName())),
+        h2(format("Job Id: %s", processJob.getJobId())),
+        h3(format("File name: %s", processJob.getPayloadLocation().getName())),
         h3(format("Original file hash: %s", processJob.getOriginalFileHash())),
         h3(format("Original file size: %s", processJob.getOriginalFileSize())),
         br(),

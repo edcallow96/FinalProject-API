@@ -36,12 +36,14 @@ public class FailureNotificationProcessor extends BaseNotificationProcessor {
   private String generateHtmlBody(ProcessJob processJob) {
     ProcessResult failedProcess = processJob.getProcessingResults().stream().filter(it -> it.getProcessStatus() == FAILED).findFirst().get();
     return body(
-        h1(format("Hello, %s! Here is the link to your processed file:", processJob.getUser().getFirstName())),
-        h2(format("File name: %s", processJob.getPayloadLocation().getName())),
+        h1(format("Hello %s, your file has failed processing! Details below:", processJob.getUser().getFirstName())),
+        h2(format("Job Id: %s", processJob.getJobId())),
+        h3(format("File name: %s", processJob.getPayloadLocation().getName())),
         h3(format("Original file hash: %s", processJob.getOriginalFileHash())),
         h3(format("Original file size: %s", processJob.getOriginalFileSize())),
         br(),
-        p(format("Your file failed the %s process because %s", failedProcess.getProcessName(), failedProcess.getFailureReason()))
+        p(format("Your file failed the %s process because %s. Please contact the support team referencing your JobId.",
+            failedProcess.getProcessName(), failedProcess.getFailureReason()))
     ).render();
   }
 }

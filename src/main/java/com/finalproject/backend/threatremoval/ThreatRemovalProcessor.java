@@ -87,7 +87,7 @@ public class ThreatRemovalProcessor extends PayloadProcessor {
             HttpMethod.POST, httpEntity, Resource.class);
     if (responseEntity.getStatusCode() != HttpStatus.OK) {
       throw new ThreatRemovalException(
-          String.format("File sanitisation failed reason: %s", IOUtils.toString(responseEntity.getBody().getInputStream())));
+          String.format("file sanitisation failed reason: %s", IOUtils.toString(responseEntity.getBody().getInputStream())));
     }
     FileUtils.copyInputStreamToFile(responseEntity.getBody().getInputStream(), payloadLocation);
   }
