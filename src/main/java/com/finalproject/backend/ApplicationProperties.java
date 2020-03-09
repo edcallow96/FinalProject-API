@@ -27,4 +27,6 @@ public class ApplicationProperties {
   private int selfSignedUrlExpirationDays;
 
   private String notificationSenderAddress;
+
+  private double maxThreatRemovalFileSize;
 }
