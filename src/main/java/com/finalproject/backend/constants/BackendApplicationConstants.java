@@ -19,5 +19,5 @@ public class BackendApplicationConstants {
   //AWS Metadata header
   public static final String AMZ_METADATA_USER_ID = "userId";
 
-  public static final int BYTES_PER_MEGABYTE = 1000000;
+  public static final int BYTES_PER_MEGABYTE = 1048576;
 }

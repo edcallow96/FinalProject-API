@@ -37,7 +37,7 @@ public class FileIdentifier {
     try {
       List<String> expectedExtensions = tikaConfig.getMimeRepository().forName(contentType.toString()).getExtensions();
       String fileExtension = "." + getExtension(file.getName());
-      if (!expectedExtensions.contains(fileExtension)) {
+      if (!expectedExtensions.contains(fileExtension.toLowerCase())) {
         throw new FileIdentificationException(String.format("file %s has spoofed file extension for type %s", file.getName(), contentType));
       }
     } catch (MimeTypeException e) {

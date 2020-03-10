@@ -36,7 +36,16 @@ public class FileIdentifierShould {
   }
 
   @Test
-  public void successfulIdentifyFile() throws Exception {
+  public void successfullyIdentifyFile() throws Exception {
+    MediaType contentType = fileIdentifier.identifyFile(testFile);
+
+    assertThat(contentType, equalTo(MediaType.TEXT_PLAIN));
+  }
+
+  @Test
+  public void successfullyIdentifyFileWithUppercaseFileExtension() throws Exception {
+    testFile = temporaryFolder.newFile(randomAlphabetic(10) + ".TXT");
+
     MediaType contentType = fileIdentifier.identifyFile(testFile);
 
     assertThat(contentType, equalTo(MediaType.TEXT_PLAIN));
