@@ -11,6 +11,8 @@ import org.apache.camel.Exchange;
 import org.apache.camel.builder.ExchangeBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.tika.mime.MediaType;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,18 +25,24 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 import static com.finalproject.backend.model.ProcessName.FILE_IDENTIFICATION;
 import static com.finalproject.backend.model.ProcessStatus.SUCCESS;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -120,5 +128,149 @@ public class SuccessNotificationProcessorShould {
 
     assertThat(expectedSenderAddress, equalTo(capturedEmailRequest.getSource()));
   }
+
+  @Test
+  public void generateHtmlEmailContent() {
+    successNotificationProcessor.process(exchange);
+
+    verify(amazonSimpleEmailService).sendEmail(emailRequestArgumentCaptor.capture());
+
+    SendEmailRequest capturedEmailRequest = emailRequestArgumentCaptor.getValue();
+
+    Document document = Jsoup.parse(capturedEmailRequest.getMessage().getBody().getHtml().getData());
+
+    assertThat(document, notNullValue());
+    assertThat(document.body(), notNullValue());
+    assertThat(document.body().getAllElements(), not(empty()));
+  }
+
+  @Test
+  public void generateEmailHeaderThatContainsUsersFirstName() {
+    successNotificationProcessor.process(exchange);
+
+    verify(amazonSimpleEmailService).sendEmail(emailRequestArgumentCaptor.capture());
+
+    String firstName = exchange.getIn().getBody(ProcessJob.class).getUser().getFirstName();
+    SendEmailRequest capturedEmailRequest = emailRequestArgumentCaptor.getValue();
+
+    Document document = Jsoup.parse(capturedEmailRequest.getMessage().getBody().getHtml().getData());
+
+    assertThat(document.body().selectFirst("h1").toString(), containsString(firstName));
+  }
+
+  @Test
+  public void generateEmailContentThatContainsJobId() {
+    successNotificationProcessor.process(exchange);
+
+    verify(amazonSimpleEmailService).sendEmail(emailRequestArgumentCaptor.capture());
+
+    String jobId = exchange.getIn().getBody(ProcessJob.class).getJobId();
+    SendEmailRequest capturedEmailRequest = emailRequestArgumentCaptor.getValue();
+
+    Document document = Jsoup.parse(capturedEmailRequest.getMessage().getBody().getHtml().getData());
+
+    assertThat(document.body().selectFirst("h2").toString(), containsString(jobId));
+  }
+
+  @Test
+  public void generateEmailContentThatContainsOriginalFileInformation() {
+    successNotificationProcessor.process(exchange);
+
+    verify(amazonSimpleEmailService).sendEmail(emailRequestArgumentCaptor.capture());
+
+    ProcessJob processJob = exchange.getIn().getBody(ProcessJob.class);
+
+    SendEmailRequest capturedEmailRequest = emailRequestArgumentCaptor.getValue();
+
+    Document document = Jsoup.parse(capturedEmailRequest.getMessage().getBody().getHtml().getData());
+
+    assertThat(document.body().select("p:nth-of-type(1)").toString(), containsString(processJob.getPayloadLocation().getName()));
+    assertThat(document.body().select("p:nth-of-type(2)").toString(), containsString(processJob.getOriginalFileHash()));
+    assertThat(document.body().select("p:nth-of-type(3)").toString(), containsString(Long.toString(processJob.getOriginalFileSize())));
+  }
+
+  @Test
+  public void generateEmailContentThatContainsProcessedFileInformation() throws IOException {
+    successNotificationProcessor.process(exchange);
+
+    verify(amazonSimpleEmailService).sendEmail(emailRequestArgumentCaptor.capture());
+
+    ProcessJob processJob = exchange.getIn().getBody(ProcessJob.class);
+
+    SendEmailRequest capturedEmailRequest = emailRequestArgumentCaptor.getValue();
+
+    Document document = Jsoup.parse(capturedEmailRequest.getMessage().getBody().getHtml().getData());
+
+    assertThat(document.body().select("p:nth-of-type(4)").toString(), containsString(md5Hex(new FileInputStream(processJob.getPayloadLocation())).toUpperCase()));
+    assertThat(document.body().select("p:nth-of-type(5)").toString(), containsString(Long.toString(processJob.getPayloadLocation().length())));
+  }
+
+  @Test
+  public void notIncludeProcessFileInformationWhenFileHasNotBeenAltered() throws IOException {
+    ProcessJob processJob = exchange.getIn().getBody(ProcessJob.class);
+    processJob.setOriginalFileHash(md5Hex(new FileInputStream(processJob.getPayloadLocation())).toUpperCase());
+    exchange.getIn().setBody(processJob);
+
+    successNotificationProcessor.process(exchange);
+
+    verify(amazonSimpleEmailService).sendEmail(emailRequestArgumentCaptor.capture());
+
+    SendEmailRequest capturedEmailRequest = emailRequestArgumentCaptor.getValue();
+
+    Document document = Jsoup.parse(capturedEmailRequest.getMessage().getBody().getHtml().getData());
+
+    assertThat(document.body().select("p:nth-of-type(4)").toString(), not(containsString(md5Hex(new FileInputStream(processJob.getPayloadLocation())).toUpperCase())));
+    assertThat(document.body().select("p:nth-of-type(5)").toString(), not(containsString(Long.toString(processJob.getPayloadLocation().length()))));
+  }
+
+
+  @Test
+  public void generateEmailWithProcessingResultsTable() {
+    successNotificationProcessor.process(exchange);
+
+    verify(amazonSimpleEmailService).sendEmail(emailRequestArgumentCaptor.capture());
+
+    SendEmailRequest capturedEmailRequest = emailRequestArgumentCaptor.getValue();
+
+    List<ProcessResult> processResults = exchange.getIn().getBody(ProcessJob.class).getProcessingResults();
+    Document document = Jsoup.parse(capturedEmailRequest.getMessage().getBody().getHtml().getData());
+
+    assertThat(document.select("caption").html(), equalTo("Processing Results"));
+    for (int i = 0; i < processResults.size(); i++) {
+      assertThat(document.select(format("tr:nth-of-type(%s) > td:nth-of-type(1)", i + 2)).html(), equalTo(processResults.get(i).getProcessName().name()));
+      assertThat(document.select(format("tr:nth-of-type(%s) > td:nth-of-type(2)", i + 2)).html(), equalTo(processResults.get(i).getProcessStatus().name()));
+    }
+  }
+
+  @Test
+  public void generateEmailWithPreSignedUrlLink() throws MalformedURLException {
+    String expectedPreSignedUrl = "http://" + randomAlphabetic(10);
+    when(amazonS3.generatePresignedUrl(anyString(), anyString(), any(Date.class))).thenReturn(new URL(expectedPreSignedUrl));
+
+    successNotificationProcessor.process(exchange);
+
+    verify(amazonSimpleEmailService).sendEmail(emailRequestArgumentCaptor.capture());
+
+    SendEmailRequest capturedEmailRequest = emailRequestArgumentCaptor.getValue();
+
+    Document document = Jsoup.parse(capturedEmailRequest.getMessage().getBody().getHtml().getData());
+
+    assertThat(document.select("a").attr("href"), equalTo(expectedPreSignedUrl));
+  }
+
+  @Test
+  public void generateEmailWithLinkExpiration() {
+    successNotificationProcessor.process(exchange);
+
+    verify(amazonSimpleEmailService).sendEmail(emailRequestArgumentCaptor.capture());
+
+    SendEmailRequest capturedEmailRequest = emailRequestArgumentCaptor.getValue();
+
+    Document document = Jsoup.parse(capturedEmailRequest.getMessage().getBody().getHtml().getData());
+
+    assertThat(document.body().select("p:nth-of-type(6)").toString(),
+        containsString(format("This link will be valid for %s days.", applicationProperties.getSelfSignedUrlExpirationDays())));
+  }
+
 
 }
