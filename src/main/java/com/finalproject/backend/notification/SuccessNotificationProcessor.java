@@ -4,17 +4,24 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.finalproject.backend.ApplicationProperties;
 import com.finalproject.backend.model.ProcessJob;
+import j2html.tags.DomContent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.stereotype.Component;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import static j2html.TagCreator.*;
 import static java.lang.String.format;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 
 @Component
@@ -42,7 +49,7 @@ public class SuccessNotificationProcessor extends BaseNotificationProcessor {
       sendNotification("Your file has been successfully processed!",
           generateHtmlBody(processJob, preSignedUrl), processJob.getUser().getEmailAddress());
     } catch (Exception exception) {
-      exception.printStackTrace();
+      log.error("Sending notification failed.", exception);
     }
   }
 
@@ -53,19 +60,31 @@ public class SuccessNotificationProcessor extends BaseNotificationProcessor {
     return amazonS3.generatePresignedUrl(applicationProperties.getTreatedBucketName(), processJob.getTreatedBucketKey(), expirationDate);
   }
 
-  private String generateHtmlBody(ProcessJob processJob, URL preSignedUrl) throws Exception {
-    return body(
+  private String generateHtmlBody(ProcessJob processJob, URL preSignedUrl) throws IOException {
+    List<DomContent> bodyContents = new ArrayList<>(Arrays.asList(
+        style(IOUtils.toString(getClass().getResourceAsStream("/emailCss.css"), UTF_8)),
         h1(format("Hello, %s! Here is the link to your processed file:", processJob.getUser().getFirstName())),
         h2(format("Job Id: %s", processJob.getJobId())),
-        h3(format("File name: %s", processJob.getPayloadLocation().getName())),
-        h3(format("Original file hash: %s", processJob.getOriginalFileHash())),
-        h3(format("Original file size: %s", processJob.getOriginalFileSize())),
-        br(),
-        h3(format("Processed file hash: %s", md5Hex(new FileInputStream(processJob.getPayloadLocation())).toUpperCase())),
-        h3(format("Processed file size: %s", processJob.getPayloadLocation().length())),
-        p("Click ").with(a("here").withHref(preSignedUrl.toString())).withText(" to download the processed file.")
-            .withText(format(" This link will be valid for %s days.", applicationProperties.getSelfSignedUrlExpirationDays()))
-    ).render();
+        h3("File Info:"),
+        p(format("File name: %s", processJob.getPayloadLocation().getName())),
+        p(format("Original file hash: %s", processJob.getOriginalFileHash())),
+        p(format("Original file size: %s", processJob.getOriginalFileSize()))));
+
+    String newFileHash = md5Hex(new FileInputStream(processJob.getPayloadLocation())).toUpperCase();
+    if (!newFileHash.equals(processJob.getOriginalFileHash())) {
+      bodyContents.add(p(format("Processed file hash: %s", newFileHash)));
+      bodyContents.add(p(format("Processed file size: %s", processJob.getPayloadLocation().length())));
+    }
+
+    bodyContents.add(table(
+        caption("Processing Results"),
+        tr(td("Process name"), td("Process result"),
+            each(processJob.getProcessingResults(),
+                processResult -> tr(td(processResult.getProcessName().name()), td(processResult.getProcessStatus().name()))))));
+
+    bodyContents.add(p("Click ").with(a("here").withHref(preSignedUrl.toString())).withText(" to download the processed file.")
+        .withText(format(" This link will be valid for %s days.", applicationProperties.getSelfSignedUrlExpirationDays())));
+    return body(bodyContents.toArray(new DomContent[0])).render();
   }
 
 }
