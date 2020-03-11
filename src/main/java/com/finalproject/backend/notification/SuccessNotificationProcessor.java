@@ -64,11 +64,9 @@ public class SuccessNotificationProcessor extends BaseNotificationProcessor {
     List<DomContent> bodyContents = new ArrayList<>(Arrays.asList(
         style(IOUtils.toString(getClass().getResourceAsStream("/emailCss.css"), UTF_8)),
         h1(format("Hello, %s! Here is the link to your processed file:", processJob.getUser().getFirstName())),
-        h2(format("Job Id: %s", processJob.getJobId())),
-        h3("File Info:"),
-        p(format("File name: %s", processJob.getPayloadLocation().getName())),
-        p(format("Original file hash: %s", processJob.getOriginalFileHash())),
-        p(format("Original file size: %s", processJob.getOriginalFileSize()))));
+        h2(format("Job Id: %s", processJob.getJobId()))));
+
+    bodyContents.addAll(getFileInfoSection(processJob));
 
     String newFileHash = md5Hex(new FileInputStream(processJob.getPayloadLocation())).toUpperCase();
     if (!newFileHash.equals(processJob.getOriginalFileHash())) {
