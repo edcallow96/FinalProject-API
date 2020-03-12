@@ -27,6 +27,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import static com.finalproject.backend.constants.BackendApplicationConstants.*;
+import static org.apache.tika.mime.MediaType.OCTET_STREAM;
 import static org.mockito.Mockito.doAnswer;
 
 @RunWith(CamelSpringBootRunner.class)
@@ -92,5 +93,9 @@ public abstract class BaseRouteTest {
       exchange.getIn().setBody(ProcessJob.builder().build());
       return null;
     }).when(prepareJobProcessor).process(exchange);
+    doAnswer((invocation) -> {
+      exchange.getIn().getBody(ProcessJob.class).setContentType(OCTET_STREAM);
+      return null;
+    }).when(fileIdentificationProcessor).process(exchange);
   }
 }

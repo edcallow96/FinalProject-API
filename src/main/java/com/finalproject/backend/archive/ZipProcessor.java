@@ -48,7 +48,7 @@ public class ZipProcessor implements Processor {
     String originalZipFile = processedFiles.get(0).getSourceKey();
     Path zipFileLocation = applicationProperties.getDownloadDirectory().resolve(format("%s/%s", randomAlphabetic(10), originalZipFile));
     log.info("Attempting to zip {} files into {}", processedFiles.size(), zipFileLocation);
-    zipFileLocation.getParent().toFile().mkdir();
+    zipFileLocation.getParent().toFile().mkdirs();
     ZipFile zipFile = new ZipFile(zipFileLocation.toFile());
     for (ProcessJob file : processedFiles) {
       log.info("Zipping {}", file.getPayloadLocation());

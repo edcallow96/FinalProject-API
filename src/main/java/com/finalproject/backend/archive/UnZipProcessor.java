@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.ZipFile;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.commons.lang3.SerializationUtils;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
@@ -27,7 +26,7 @@ public class UnZipProcessor implements Processor {
       ZipFile zipFile = new ZipFile(processJob.getPayloadLocation());
       zipFile.extractAll(destinationDirectory.toString());
       List<ProcessJob> extractedFiles = getExtractedFiles(destinationDirectory, processJob);
-      log.info("Extracted {} files from {}", extractedFiles.size(), zipFile.getFile());
+      log.info("Extracted {} files from {}", extractedFiles.size(), zipFile);
       exchange.getIn().setBody(extractedFiles);
     } catch (Exception e) {
       e.printStackTrace();
@@ -35,11 +34,16 @@ public class UnZipProcessor implements Processor {
   }
 
   private List<ProcessJob> getExtractedFiles(Path destinationDirectory, ProcessJob processJob) {
-    return asList(destinationDirectory.toFile().listFiles()).stream().map(extractedFile -> {
-      log.info("Building processJob for extracted file {}", extractedFile);
-      ProcessJob extractedProcessJob = SerializationUtils.clone(processJob);
-      extractedProcessJob.setPayloadLocation(extractedFile);
-      return extractedProcessJob;
-    }).collect(toList());
+    return asList(destinationDirectory.toFile().listFiles()).stream().map(
+        extractedFile -> ProcessJob.builder()
+            .payloadLocation(extractedFile)
+            .user(processJob.getUser())
+            .originalFileHash(processJob.getOriginalFileHash())
+            .originalFileSize(processJob.getOriginalFileSize())
+            .jobId(processJob.getJobId())
+            .sourceBucket(processJob.getSourceBucket())
+            .sourceKey(processJob.getSourceKey())
+            .build())
+        .collect(toList());
   }
 }

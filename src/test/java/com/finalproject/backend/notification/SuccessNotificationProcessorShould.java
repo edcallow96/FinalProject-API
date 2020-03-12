@@ -83,6 +83,7 @@ public class SuccessNotificationProcessorShould {
         .processingResults(asList(ProcessResult.builder().processStatus(SUCCESS).processName(FILE_IDENTIFICATION).build()))
         .contentType(MediaType.TEXT_PLAIN)
         .treatedBucketKey(randomAlphabetic(10))
+        .sourceKey(randomAlphabetic(10))
         .build();
     exchange = ExchangeBuilder.anExchange(new DefaultCamelContext()).withBody(processJob).build();
 
@@ -184,7 +185,7 @@ public class SuccessNotificationProcessorShould {
 
     Document document = Jsoup.parse(capturedEmailRequest.getMessage().getBody().getHtml().getData());
 
-    assertThat(document.body().select("p:nth-of-type(1)").toString(), containsString(processJob.getPayloadLocation().getName()));
+    assertThat(document.body().select("p:nth-of-type(1)").toString(), containsString(processJob.getSourceKey()));
     assertThat(document.body().select("p:nth-of-type(2)").toString(), containsString(processJob.getOriginalFileHash()));
     assertThat(document.body().select("p:nth-of-type(3)").toString(), containsString(Long.toString(processJob.getOriginalFileSize())));
   }
