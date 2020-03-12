@@ -1,23 +1,28 @@
 package com.finalproject.backend.handlers;
 
+import com.finalproject.backend.model.ProcessJob;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
 import static com.finalproject.backend.constants.BackendApplicationConstants.*;
 import static org.apache.camel.support.builder.PredicateBuilder.not;
+import static org.apache.tika.mime.MediaType.APPLICATION_ZIP;
 
 @Component
 public class LambdaEntryPointRoute extends RouteBuilder {
 
   private final PrepareJobProcessor prepareJobProcessor;
   private final JobFailedPredicate jobFailedPredicate;
+  private final ProcessJobZipSplitter processJobZipSplitter;
 
   public LambdaEntryPointRoute(
       final PrepareJobProcessor prepareJobProcessor,
-      final JobFailedPredicate jobFailedPredicate) {
+      final JobFailedPredicate jobFailedPredicate,
+      ProcessJobZipSplitter processJobZipSplitter) {
     this.prepareJobProcessor = prepareJobProcessor;
     this.jobFailedPredicate = jobFailedPredicate;
+    this.processJobZipSplitter = processJobZipSplitter;
   }
 
   @Override
@@ -26,13 +31,19 @@ public class LambdaEntryPointRoute extends RouteBuilder {
 
     onException(Exception.class)
         .log(LoggingLevel.ERROR, "Exception received ${exception.message}" )
-        .log(LoggingLevel.DEBUG, "${exception.stacktrace}")
+        .log(LoggingLevel.ERROR, "${exception.stacktrace}")
         .handled(true);
 
     from(ENTRY_POINT_ROUTE)
         .process(prepareJobProcessor)
-        .to(PROCESS_JOB)
-        .log("${body}")
+        .to(FILE_IDENTIFICATION_ROUTE)
+        .choice()
+          .when(exchange -> exchange.getIn().getBody(ProcessJob.class).getContentType().equals(APPLICATION_ZIP) )
+            .to("direct:unzipFileRoute")
+          .otherwise()
+            .to(PROCESS_JOB)
+        .end()
+        .log("Finished ${body}")
         .choice()
           .when(jobFailedPredicate)
             .to(SEND_FAILURE_NOTIFICATION)
