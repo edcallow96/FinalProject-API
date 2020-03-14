@@ -5,7 +5,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.processor.aggregate.GroupedMessageAggregationStrategy;
 import org.springframework.stereotype.Component;
 
-import static com.finalproject.backend.constants.BackendApplicationConstants.PROCESS_JOB;
+import static com.finalproject.backend.constants.BackendApplicationConstants.*;
 
 @Component
 public class HandleArchiveRoute extends RouteBuilder {
@@ -23,17 +23,18 @@ public class HandleArchiveRoute extends RouteBuilder {
   public void configure() {
     //@formatter:off
 
-    from("direct:unzipFileRoute")
+    from(UNZIP_FILE_ROUTE)
         .process(unZipProcessor)
         .split(simple("${body}"))
-          .to(PROCESS_JOB)
+          .to(PROCESS_JOB_ROUTE)
         .end()
-        .to("direct:zipFileRoute");
+        .to(ZIP_FILE_ROUTE);
 
-    from("direct:zipFileRoute")
+    from(ZIP_FILE_ROUTE)
         .aggregate(constant(true), new GroupedMessageAggregationStrategy())
-          .completionTimeout(1000)
-            .log(LoggingLevel.ERROR, "Aggregation failed to complete in time")
+          .completionTimeout(600000)
+          .closeCorrelationKeyOnCompletion(0)
+          .log(LoggingLevel.ERROR, "Aggregation failed to complete in time")
         .end()
         .log("Aggregated body: ${body}")
         .process(zipProcessor);

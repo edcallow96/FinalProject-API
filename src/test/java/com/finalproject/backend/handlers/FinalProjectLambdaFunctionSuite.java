@@ -4,6 +4,8 @@ import com.amazonaws.services.lambda.runtime.events.S3Event;
 import com.amazonaws.services.s3.event.S3EventNotification;
 import com.amazonaws.services.s3.model.S3Object;
 import com.finalproject.backend.common.BaseRouteTest;
+import org.apache.camel.EndpointInject;
+import org.apache.camel.component.mock.MockEndpoint;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,15 +13,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 
+import static com.finalproject.backend.constants.BackendApplicationConstants.ENTRY_POINT_ROUTE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.when;
 
-public class FinalProjectLambdaFunctionRouteSuite extends BaseRouteTest {
+public class FinalProjectLambdaFunctionSuite extends BaseRouteTest {
 
   @Autowired
   protected FinalProjectLambdaFunction finalProjectLambdaFunction;
+
+  @EndpointInject("mock:" + ENTRY_POINT_ROUTE)
+  protected MockEndpoint mockEntryPointEndpoint;
 
   @Before
   public void setUp() throws Exception {
