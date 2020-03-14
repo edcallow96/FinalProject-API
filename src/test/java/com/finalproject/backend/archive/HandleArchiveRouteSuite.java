@@ -52,7 +52,6 @@ public class HandleArchiveRouteSuite extends BaseRouteTest {
   @Test
   public void zipFieRouteShouldAggregateExtractedFileJobs() throws Exception {
     unzipFileRouteShouldSendEachExtractedFileToProcessJobRoute();
-//    mockProcessJobEndpoint.getExchanges().forEach(e -> templateProducer.send(ZIP_FILE_ROUTE, e));
 
     verify(zipProcessor).process(any(Exchange.class));
   }

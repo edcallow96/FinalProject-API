@@ -6,6 +6,8 @@ import org.apache.camel.processor.aggregate.GroupedMessageAggregationStrategy;
 import org.springframework.stereotype.Component;
 
 import static com.finalproject.backend.constants.BackendApplicationConstants.*;
+import static org.apache.camel.Exchange.AGGREGATED_SIZE;
+import static org.apache.camel.Exchange.SPLIT_SIZE;
 
 @Component
 public class HandleArchiveRoute extends RouteBuilder {
@@ -25,14 +27,14 @@ public class HandleArchiveRoute extends RouteBuilder {
 
     from(UNZIP_FILE_ROUTE)
         .process(unZipProcessor)
-        .split(simple("${body}"))
+        .split(body())
           .to(PROCESS_JOB_ROUTE)
         .end()
         .to(ZIP_FILE_ROUTE);
 
     from(ZIP_FILE_ROUTE)
         .aggregate(constant(true), new GroupedMessageAggregationStrategy())
-          .completionTimeout(600000)
+          .completionPredicate(exchangeProperty(AGGREGATED_SIZE).isGreaterThanOrEqualTo(SPLIT_SIZE))
           .closeCorrelationKeyOnCompletion(0)
           .log(LoggingLevel.ERROR, "Aggregation failed to complete in time")
         .end()
