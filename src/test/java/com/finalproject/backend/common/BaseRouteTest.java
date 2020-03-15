@@ -21,7 +21,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
+import static com.finalproject.backend.constants.BackendApplicationConstants.AMAZON_REQUEST_ID;
 import static com.finalproject.backend.constants.BackendApplicationConstants.UNZIP_FILE_ROUTE;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 
 @RunWith(CamelSpringBootRunner.class)
 @SpringBootTest
@@ -54,7 +56,7 @@ public abstract class BaseRouteTest {
 
   @Before
   public void setUp() throws Exception {
-    exchange = ExchangeBuilder.anExchange(camelContext).withBody(ProcessJob.builder().build()).build();
+    exchange = ExchangeBuilder.anExchange(camelContext).withHeader(AMAZON_REQUEST_ID, randomAlphabetic(10)).withBody(ProcessJob.builder().build()).build();
   }
 
 }

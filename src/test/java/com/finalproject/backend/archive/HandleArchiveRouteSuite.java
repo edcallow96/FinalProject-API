@@ -4,6 +4,7 @@ import com.finalproject.backend.common.BaseRouteTest;
 import com.finalproject.backend.model.ProcessJob;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
+import org.apache.camel.builder.ExchangeBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.MockEndpoints;
 import org.junit.Test;
@@ -14,9 +15,9 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import static com.finalproject.backend.constants.BackendApplicationConstants.*;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @MockEndpoints(UNZIP_FILE_ROUTE + "|" + ZIP_FILE_ROUTE)
 public class HandleArchiveRouteSuite extends BaseRouteTest {
@@ -43,17 +44,44 @@ public class HandleArchiveRouteSuite extends BaseRouteTest {
     }).when(unZipProcessor).process(exchange);
 
     mockProcessJobEndpoint.setExpectedCount(10);
+    mockZipFileEndpoint.setExpectedCount(10);
     templateProducer.send(UNZIP_FILE_ROUTE, exchange);
 
     verify(unZipProcessor).process(exchange);
     mockProcessJobEndpoint.assertIsSatisfied();
+    mockZipFileEndpoint.assertIsSatisfied();
   }
 
   @Test
   public void zipFieRouteShouldAggregateExtractedFileJobs() throws Exception {
-    unzipFileRouteShouldSendEachExtractedFileToProcessJobRoute();
+    String jobId = randomAlphabetic(10);
+    IntStream.range(0, 10).forEach(i -> {
+      Exchange exchangeToBeAggregated = ExchangeBuilder.anExchange(camelContext).build();
+      exchangeToBeAggregated.setProperty(Exchange.SPLIT_SIZE, 10);
+      exchangeToBeAggregated.setProperty(Exchange.SPLIT_INDEX, i);
+      exchangeToBeAggregated.getIn().setHeader(AMAZON_REQUEST_ID, jobId);
+      exchangeToBeAggregated.getIn().setBody(ProcessJob.builder().build());
+      templateProducer.send(ZIP_FILE_ROUTE, exchangeToBeAggregated);
+    });
 
     verify(zipProcessor).process(any(Exchange.class));
+  }
+
+  @Test
+  public void zipFieRouteAggregationCanHandleMultipleJobs() throws Exception {
+    IntStream.range(0, 10).forEach(i -> {
+      String jobId = randomAlphabetic(10);
+      IntStream.range(0, 10).forEach(j -> {
+        Exchange exchangeToBeAggregated = ExchangeBuilder.anExchange(camelContext).build();
+        exchangeToBeAggregated.setProperty(Exchange.SPLIT_SIZE, 10);
+        exchangeToBeAggregated.setProperty(Exchange.SPLIT_INDEX, j);
+        exchangeToBeAggregated.getIn().setHeader(AMAZON_REQUEST_ID, jobId);
+        exchangeToBeAggregated.getIn().setBody(ProcessJob.builder().build());
+        templateProducer.send(ZIP_FILE_ROUTE, exchangeToBeAggregated);
+      });
+    });
+
+    verify(zipProcessor, times(10)).process(any(Exchange.class));
   }
 
 }
