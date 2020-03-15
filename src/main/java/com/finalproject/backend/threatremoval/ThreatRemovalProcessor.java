@@ -1,6 +1,7 @@
 package com.finalproject.backend.threatremoval;
 
-import com.amazonaws.util.IOUtils;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.finalproject.backend.ApplicationProperties;
 import com.finalproject.backend.common.PayloadProcessor;
 import com.finalproject.backend.model.ProcessJob;
@@ -11,17 +12,24 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URI;
 
 import static com.finalproject.backend.model.ProcessName.THREAT_REMOVAL;
 import static com.finalproject.backend.model.ProcessStatus.FAILED;
 import static com.finalproject.backend.model.ProcessStatus.SUCCESS;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.springframework.http.HttpStatus.TOO_MANY_REQUESTS;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 @Component
@@ -82,17 +90,37 @@ public class ThreatRemovalProcessor extends PayloadProcessor {
   }
 
   private void uploadFileForSanitisaion(HttpEntity<FileSystemResource> httpEntity, File payloadLocation) throws Exception {
-    ResponseEntity<Resource> responseEntity =
-        new RestTemplate().exchange(URI.create(String.format("%s/upload", applicationProperties.getDeepSecureEndpoint())),
-            HttpMethod.POST, httpEntity, Resource.class);
-    if (responseEntity.getStatusCode() != HttpStatus.OK) {
+    try {
+      ResponseEntity<Resource> responseEntity =
+          new RestTemplate().exchange(URI.create(String.format("%s/upload", applicationProperties.getDeepSecureEndpoint())),
+              HttpMethod.POST, httpEntity, Resource.class);
+      FileUtils.copyInputStreamToFile(responseEntity.getBody().getInputStream(), payloadLocation);
+    } catch (HttpStatusCodeException e) {
       throw new ThreatRemovalException(
-          String.format("file sanitisation failed reason: %s", IOUtils.toString(responseEntity.getBody().getInputStream())));
+          String.format("file sanitisation failed, reason: %s", attemptToExtractFailureReason(e)));
+    } catch (Exception e) {
+      throw new ThreatRemovalException("file sanitisation failed.", e);
     }
-    FileUtils.copyInputStreamToFile(responseEntity.getBody().getInputStream(), payloadLocation);
   }
 
   private String md5Hash(File payloadLocaton) throws Exception {
     return DigestUtils.md5Hex(new FileInputStream(payloadLocaton)).toUpperCase();
+  }
+
+  private String attemptToExtractFailureReason(HttpStatusCodeException exception) {
+    String failureReason = "Unexpected failure";
+    try {
+      if (isNotBlank(exception.getResponseBodyAsString())) {
+        JsonNode response = new ObjectMapper().readTree(exception.getResponseBodyAsString());
+        if (exception.getStatusCode() == TOO_MANY_REQUESTS) {
+          failureReason = response.get("error").get("message").asText();
+        } else {
+          failureReason = response.get("message").asText();
+        }
+      }
+      return failureReason;
+    } catch (IOException e) {
+      return failureReason;
+    }
   }
 }
