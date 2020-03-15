@@ -51,7 +51,7 @@ public class AntiVirusProcessor extends PayloadProcessor {
       processAntiVirusResponse(antiVirusResponse, currentProcessJob.getPayloadLocation());
       succeedCurrentJob(currentProcessJob);
     } catch (Exception exception) {
-      exception.printStackTrace();
+      log.error("AntiVirus processing failed", exception);
       failCurrentJob(currentProcessJob, exception.getMessage());
     }
   }
