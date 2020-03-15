@@ -74,11 +74,7 @@ public class SuccessNotificationProcessor extends BaseNotificationProcessor {
       bodyContents.add(p(format("Processed file size: %s", processJob.getPayloadLocation().length())));
     }
 
-    bodyContents.add(table(
-        caption("Processing Results"),
-        tr(td("Process name"), td("Process result"),
-            each(processJob.getProcessingResults(),
-                processResult -> tr(td(processResult.getProcessName().name()), td(processResult.getProcessStatus().name()))))));
+    bodyContents.add(getProcessingResultsTable(processJob));
 
     bodyContents.add(p("Click ").with(a("here").withHref(preSignedUrl.toString())).withText(" to download the processed file.")
         .withText(format(" This link will be valid for %s days.", applicationProperties.getSelfSignedUrlExpirationDays())));

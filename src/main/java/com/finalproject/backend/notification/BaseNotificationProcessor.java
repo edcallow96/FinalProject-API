@@ -12,8 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static j2html.TagCreator.h3;
-import static j2html.TagCreator.p;
+import static j2html.TagCreator.*;
 import static java.lang.String.format;
 import static org.apache.commons.codec.CharEncoding.UTF_8;
 
@@ -51,5 +50,13 @@ public abstract class BaseNotificationProcessor implements Processor {
         p(format("File name: %s", processJob.getSourceKey())),
         p(format("Original file hash: %s", processJob.getOriginalFileHash())),
         p(format("Original file size: %s", processJob.getOriginalFileSize()))));
+  }
+
+  protected DomContent getProcessingResultsTable(ProcessJob processJob) {
+    return table(
+        caption("Processing Results"),
+        tr(td("Process name"), td("Process result"),
+            each(processJob.getProcessingResults(),
+                processResult -> tr(td(processResult.getProcessName().name()), td(processResult.getProcessStatus().name())))));
   }
 }

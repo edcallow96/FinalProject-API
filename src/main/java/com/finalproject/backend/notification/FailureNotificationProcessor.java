@@ -46,6 +46,8 @@ public class FailureNotificationProcessor extends BaseNotificationProcessor {
 
     bodyContents.addAll(getFileInfoSection(processJob));
 
+    bodyContents.add(getProcessingResultsTable(processJob));
+
     bodyContents.add(p(format("Your file failed the %s process because %s. Please contact the support team referencing your JobId.",
         failedProcess.getProcessName(), failedProcess.getFailureReason())));
 

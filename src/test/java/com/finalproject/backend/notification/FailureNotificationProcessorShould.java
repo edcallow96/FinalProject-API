@@ -25,13 +25,16 @@ import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Random;
 
 import static com.finalproject.backend.model.ProcessName.FILE_IDENTIFICATION;
 import static com.finalproject.backend.model.ProcessStatus.FAILED;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 
@@ -132,6 +135,24 @@ public class FailureNotificationProcessorShould {
     assertThat(document.body().select("p:nth-of-type(1)").toString(), containsString(processJob.getSourceKey()));
     assertThat(document.body().select("p:nth-of-type(2)").toString(), containsString(processJob.getOriginalFileHash()));
     assertThat(document.body().select("p:nth-of-type(3)").toString(), containsString(Long.toString(processJob.getOriginalFileSize())));
+  }
+
+  @Test
+  public void generateEmailWithProcessingResultsTable() {
+    failureNotificationProcessor.process(exchange);
+
+    verify(amazonSimpleEmailService).sendEmail(emailRequestArgumentCaptor.capture());
+
+    SendEmailRequest capturedEmailRequest = emailRequestArgumentCaptor.getValue();
+
+    List<ProcessResult> processResults = exchange.getIn().getBody(ProcessJob.class).getProcessingResults();
+    Document document = Jsoup.parse(capturedEmailRequest.getMessage().getBody().getHtml().getData());
+
+    assertThat(document.select("caption").html(), equalTo("Processing Results"));
+    for (int i = 0; i < processResults.size(); i++) {
+      assertThat(document.select(format("tr:nth-of-type(%s) > td:nth-of-type(1)", i + 2)).html(), equalTo(processResults.get(i).getProcessName().name()));
+      assertThat(document.select(format("tr:nth-of-type(%s) > td:nth-of-type(2)", i + 2)).html(), equalTo(processResults.get(i).getProcessStatus().name()));
+    }
   }
 
 }
