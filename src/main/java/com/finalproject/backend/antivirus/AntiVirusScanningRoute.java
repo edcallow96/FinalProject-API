@@ -16,7 +16,7 @@ public class AntiVirusScanningRoute extends RouteBuilder {
   }
 
   @Override
-  public void configure() throws Exception {
+  public void configure() {
     from(ANTI_VIRUS_SCANNING_ROUTE)
         .log("AV scanning")
         .routeId(ANTI_VIRUS_SCAN.name())

@@ -67,6 +67,7 @@ public class FailureNotificationProcessorShould {
         .user(User.builder().firstName(randomAlphabetic(10)).lastName(randomAlphabetic(10)).emailAddress(randomAlphabetic(10)).build())
         .processingResults(asList(ProcessResult.builder().processStatus(FAILED).processName(FILE_IDENTIFICATION).failureReason(randomAlphabetic(10)).build()))
         .contentType(MediaType.TEXT_PLAIN)
+        .sourceKey(randomAlphabetic(10))
         .treatedBucketKey(randomAlphabetic(10))
         .build();
 
@@ -128,7 +129,7 @@ public class FailureNotificationProcessorShould {
 
     Document document = Jsoup.parse(capturedEmailRequest.getMessage().getBody().getHtml().getData());
 
-    assertThat(document.body().select("p:nth-of-type(1)").toString(), containsString(processJob.getPayloadLocation().getName()));
+    assertThat(document.body().select("p:nth-of-type(1)").toString(), containsString(processJob.getSourceKey()));
     assertThat(document.body().select("p:nth-of-type(2)").toString(), containsString(processJob.getOriginalFileHash()));
     assertThat(document.body().select("p:nth-of-type(3)").toString(), containsString(Long.toString(processJob.getOriginalFileSize())));
   }

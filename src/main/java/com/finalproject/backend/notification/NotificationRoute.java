@@ -3,8 +3,8 @@ package com.finalproject.backend.notification;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
-import static com.finalproject.backend.constants.BackendApplicationConstants.SEND_FAILURE_NOTIFICATION;
-import static com.finalproject.backend.constants.BackendApplicationConstants.SEND_SUCCESS_NOTIFICATION;
+import static com.finalproject.backend.constants.BackendApplicationConstants.SEND_FAILURE_NOTIFICATION_ROUTE;
+import static com.finalproject.backend.constants.BackendApplicationConstants.SEND_SUCCESS_NOTIFICATION_ROUTE;
 
 @Component
 public class NotificationRoute extends RouteBuilder {
@@ -23,14 +23,14 @@ public class NotificationRoute extends RouteBuilder {
 
   @Override
   public void configure() {
-    from(SEND_SUCCESS_NOTIFICATION)
+    from(SEND_SUCCESS_NOTIFICATION_ROUTE)
         .routeId("jobSuccess")
         .log("Success notification")
         .process(uploadTreatedFileProcessor)
         .process(successNotificationProcessor)
         .end();
 
-    from(SEND_FAILURE_NOTIFICATION)
+    from(SEND_FAILURE_NOTIFICATION_ROUTE)
         .routeId("jobFailed")
         .log("Failure notification")
         .process(failureNotificationProcessor)
