@@ -16,6 +16,7 @@ import static java.util.stream.Collectors.toList;
 @Component
 @Slf4j
 public class UnZipProcessor implements Processor {
+
   @Override
   public void process(Exchange exchange) {
     ProcessJob processJob = exchange.getIn().getBody(ProcessJob.class);
@@ -29,7 +30,7 @@ public class UnZipProcessor implements Processor {
       log.info("Extracted {} files from {}", extractedFiles.size(), zipFile);
       exchange.getIn().setBody(extractedFiles);
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error("UnZipping file {} failed", processJob.getPayloadLocation(), e);
     }
   }
 
