@@ -169,6 +169,20 @@ public class ThreatRemovalProcessorShould {
     assertThat(processResults.get(0).getFailureReason(), containsString(failureReason));
   }
 
+  @Test
+  public void addFailedProcessingStatusForAnEmptyResponseBody() {
+    stubUploadFileResponse(null, 200);
+
+    threatRemovalProcessor.process(exchange);
+
+    List<ProcessResult> processResults = exchange.getIn().getBody(ProcessJob.class).getProcessingResults();
+
+    assertThat(processResults, hasSize(1));
+    assertThat(processResults.get(0).getProcessName(), Matchers.equalTo(ProcessName.THREAT_REMOVAL));
+    assertThat(processResults.get(0).getProcessStatus(), Matchers.equalTo(ProcessStatus.FAILED));
+    assertThat(processResults.get(0).getFailureReason(), Matchers.equalTo("file sanitisation failed."));
+  }
+
   private void stubUploadFileResponse(byte[] response, int status) {
     stubFor(
         WireMock.post(urlPathMatching("/upload"))
