@@ -232,6 +232,7 @@
                     <includes>
                         <include>**Should.class</include>
                         <include>**TestSuite.class</include>
+                        <forkCount>0</forkCount>
                     </includes>
                 </configuration>
             </plugin>

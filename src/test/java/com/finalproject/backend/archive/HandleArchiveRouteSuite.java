@@ -28,6 +28,9 @@ public class HandleArchiveRouteSuite extends BaseRouteTest {
   @EndpointInject("mock:" + PROCESS_JOB_ROUTE)
   private MockEndpoint mockProcessJobEndpoint;
 
+  @EndpointInject("mock:" + JOB_COMPLETION_ROUTE)
+  private MockEndpoint mockJobCompletionEndpoint;
+
   @MockBean
   private UnZipProcessor unZipProcessor;
 
@@ -55,6 +58,7 @@ public class HandleArchiveRouteSuite extends BaseRouteTest {
   @Test
   public void zipFieRouteShouldAggregateExtractedFileJobs() throws Exception {
     String jobId = randomAlphabetic(10);
+    mockJobCompletionEndpoint.setExpectedCount(1);
     IntStream.range(0, 10).forEach(i -> {
       Exchange exchangeToBeAggregated = ExchangeBuilder.anExchange(camelContext).build();
       exchangeToBeAggregated.setProperty(Exchange.SPLIT_SIZE, 10);
@@ -65,10 +69,12 @@ public class HandleArchiveRouteSuite extends BaseRouteTest {
     });
 
     verify(zipProcessor).process(any(Exchange.class));
+    mockJobCompletionEndpoint.assertIsSatisfied();
   }
 
   @Test
   public void zipFieRouteAggregationCanHandleMultipleJobs() throws Exception {
+    mockJobCompletionEndpoint.setExpectedCount(10);
     IntStream.range(0, 10).forEach(i -> {
       String jobId = randomAlphabetic(10);
       IntStream.range(0, 10).forEach(j -> {
@@ -82,6 +88,7 @@ public class HandleArchiveRouteSuite extends BaseRouteTest {
     });
 
     verify(zipProcessor, times(10)).process(any(Exchange.class));
+    mockJobCompletionEndpoint.assertIsSatisfied();
   }
 
 }

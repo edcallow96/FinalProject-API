@@ -42,6 +42,7 @@ public class LambdaEntryPointRoute extends RouteBuilder {
             .to(UNZIP_FILE_ROUTE)
           .otherwise()
             .to(PROCESS_JOB_ROUTE)
+            .to(JOB_COMPLETION_ROUTE)
         .end();
 
     from(PROCESS_JOB_ROUTE)

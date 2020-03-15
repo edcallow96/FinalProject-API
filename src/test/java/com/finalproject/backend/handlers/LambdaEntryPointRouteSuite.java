@@ -35,6 +35,9 @@ public class LambdaEntryPointRouteSuite extends BaseRouteTest {
   @EndpointInject("mock:" + SEND_FAILURE_NOTIFICATION_ROUTE)
   private MockEndpoint mockSendFailureNotificationEndpoint;
 
+  @EndpointInject("mock:" + JOB_COMPLETION_ROUTE)
+  private MockEndpoint mockJobCompletionEndpoint;
+
   @EndpointInject("mock:" + PROCESS_JOB_ROUTE)
   private MockEndpoint mockProcessJobEndpoint;
 
@@ -172,6 +175,15 @@ public class LambdaEntryPointRouteSuite extends BaseRouteTest {
 
     mockSendFailureNotificationEndpoint.assertIsSatisfied();
     verify(jobFailedPredicate).matches(exchange);
+  }
+
+  @Test
+  public void entryPointRouteSendsJobToJobCompletionRouteAfterProcessing() throws InterruptedException {
+    mockJobCompletionEndpoint.setExpectedCount(1);
+
+    templateProducer.send(ENTRY_POINT_ROUTE, exchange);
+
+    mockJobCompletionEndpoint.assertIsSatisfied();
   }
 
 

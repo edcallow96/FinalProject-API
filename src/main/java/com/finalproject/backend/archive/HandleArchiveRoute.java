@@ -36,7 +36,8 @@ public class HandleArchiveRoute extends RouteBuilder {
           .completionPredicate(exchangeProperty(AGGREGATED_SIZE).isGreaterThanOrEqualTo(exchangeProperty(SPLIT_SIZE)))
           .closeCorrelationKeyOnCompletion(0)
           .log("Aggregated body: ${body}")
-          .process(zipProcessor);
+          .process(zipProcessor)
+          .to(JOB_COMPLETION_ROUTE);
     //@formatter:on
   }
 }
