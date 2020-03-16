@@ -25,6 +25,7 @@ import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -153,6 +154,20 @@ public class FailureNotificationProcessorShould {
       assertThat(document.select(format("tr:nth-of-type(%s) > td:nth-of-type(1)", i + 2)).html(), equalTo(processResults.get(i).getProcessName().name()));
       assertThat(document.select(format("tr:nth-of-type(%s) > td:nth-of-type(2)", i + 2)).html(), equalTo(processResults.get(i).getProcessStatus().name()));
     }
+  }
+
+  @Test
+  public void generateGenericFailureEmailWhenReasonIsUnknown() {
+    exchange.getIn().getBody(ProcessJob.class).setProcessingResults(new ArrayList<>());
+
+    failureNotificationProcessor.process(exchange);
+
+    verify(amazonSimpleEmailService).sendEmail(emailRequestArgumentCaptor.capture());
+
+    SendEmailRequest capturedEmailRequest = emailRequestArgumentCaptor.getValue();
+    Document document = Jsoup.parse(capturedEmailRequest.getMessage().getBody().getHtml().getData());
+
+    assertThat(document.body().select("p:nth-of-type(4)").toString(), containsString("an unexpected failure occurred"));
   }
 
 }

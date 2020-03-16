@@ -34,12 +34,12 @@ public class FailureNotificationProcessor extends BaseNotificationProcessor {
       sendNotification("Your file has failed processing!",
           generateHtmlBody(processJob), processJob.getUser().getEmailAddress());
     } catch (Exception exception) {
-      exception.printStackTrace();
+      log.error("Sending failure notification failed.", exception);
     }
   }
 
   private String generateHtmlBody(ProcessJob processJob) {
-    ProcessResult failedProcess = processJob.getProcessingResults().stream().filter(it -> it.getProcessStatus() == FAILED).findFirst().get();
+    ProcessResult failedProcess = processJob.getProcessingResults().stream().filter(it -> it.getProcessStatus() == FAILED).findFirst().orElse(null);
     List<DomContent> bodyContents = new ArrayList<>(asList(
         h1(format("Hello %s, your file has failed processing! Details below:", processJob.getUser().getFirstName())),
         h2(format("Job Id: %s", processJob.getJobId()))));
@@ -48,8 +48,10 @@ public class FailureNotificationProcessor extends BaseNotificationProcessor {
 
     bodyContents.add(getProcessingResultsTable(processJob));
 
-    bodyContents.add(p(format("Your file failed the %s process because %s. Please contact the support team referencing your JobId.",
-        failedProcess.getProcessName(), failedProcess.getFailureReason())));
+    String failedProcessName = failedProcess != null ? failedProcess.getProcessName().name() : "";
+    String failureReason = failedProcess != null ? failedProcess.getFailureReason() : "an unexpected failure occurred";
+    bodyContents.add(p(format("Your file failed processing %s because %s. Please contact the support team referencing your JobId.",
+        failedProcessName, failureReason)));
 
     return body(bodyContents.toArray(new DomContent[0])).render();
   }

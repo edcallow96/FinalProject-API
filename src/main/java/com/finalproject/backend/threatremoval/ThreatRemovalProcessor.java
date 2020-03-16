@@ -89,7 +89,7 @@ public class ThreatRemovalProcessor extends PayloadProcessor {
     return new HttpEntity<>(new FileSystemResource(processJob.getPayloadLocation()), headers);
   }
 
-  private void uploadFileForSanitisaion(HttpEntity<FileSystemResource> httpEntity, File payloadLocation) throws Exception {
+  private void uploadFileForSanitisaion(HttpEntity<FileSystemResource> httpEntity, File payloadLocation) throws ThreatRemovalException {
     try {
       ResponseEntity<Resource> responseEntity =
           new RestTemplate().exchange(URI.create(String.format("%s/upload", applicationProperties.getDeepSecureEndpoint())),
@@ -103,8 +103,8 @@ public class ThreatRemovalProcessor extends PayloadProcessor {
     }
   }
 
-  private String md5Hash(File payloadLocaton) throws Exception {
-    return DigestUtils.md5Hex(new FileInputStream(payloadLocaton)).toUpperCase();
+  private String md5Hash(File payloadLocaton) throws IOException {
+    return DigestUtils.sha256Hex(new FileInputStream(payloadLocaton)).toUpperCase();
   }
 
   private String attemptToExtractFailureReason(HttpStatusCodeException exception) {
