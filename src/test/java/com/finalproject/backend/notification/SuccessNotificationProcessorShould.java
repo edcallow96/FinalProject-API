@@ -38,7 +38,7 @@ import static com.finalproject.backend.model.ProcessStatus.SUCCESS;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
+import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -202,14 +202,14 @@ public class SuccessNotificationProcessorShould {
 
     Document document = Jsoup.parse(capturedEmailRequest.getMessage().getBody().getHtml().getData());
 
-    assertThat(document.body().select("p:nth-of-type(4)").toString(), containsString(md5Hex(new FileInputStream(processJob.getPayloadLocation())).toUpperCase()));
+    assertThat(document.body().select("p:nth-of-type(4)").toString(), containsString(sha256Hex(new FileInputStream(processJob.getPayloadLocation())).toUpperCase()));
     assertThat(document.body().select("p:nth-of-type(5)").toString(), containsString(Long.toString(processJob.getPayloadLocation().length())));
   }
 
   @Test
   public void notIncludeProcessFileInformationWhenFileHasNotBeenAltered() throws IOException {
     ProcessJob processJob = exchange.getIn().getBody(ProcessJob.class);
-    processJob.setOriginalFileHash(md5Hex(new FileInputStream(processJob.getPayloadLocation())).toUpperCase());
+    processJob.setOriginalFileHash(sha256Hex(new FileInputStream(processJob.getPayloadLocation())).toUpperCase());
     exchange.getIn().setBody(processJob);
 
     successNotificationProcessor.process(exchange);
@@ -220,7 +220,7 @@ public class SuccessNotificationProcessorShould {
 
     Document document = Jsoup.parse(capturedEmailRequest.getMessage().getBody().getHtml().getData());
 
-    assertThat(document.body().select("p:nth-of-type(4)").toString(), not(containsString(md5Hex(new FileInputStream(processJob.getPayloadLocation())).toUpperCase())));
+    assertThat(document.body().select("p:nth-of-type(4)").toString(), not(containsString(sha256Hex(new FileInputStream(processJob.getPayloadLocation())).toUpperCase())));
     assertThat(document.body().select("p:nth-of-type(5)").toString(), not(containsString(Long.toString(processJob.getPayloadLocation().length()))));
   }
 

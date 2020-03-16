@@ -1,6 +1,9 @@
 package com.finalproject.backend.model;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.apache.tika.mime.MediaType;
 
 import java.io.File;
@@ -12,7 +15,6 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-@EqualsAndHashCode
 public class ProcessJob implements Serializable {
   private String jobId;
   private MediaType contentType;

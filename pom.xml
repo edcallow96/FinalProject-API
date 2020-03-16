@@ -30,6 +30,8 @@
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.junit.reportPaths>target/surefire-reports</sonar.junit.reportPaths>
         <sonar.dependencyCheck.htmlReportPath>target/dependency-check-report.html</sonar.dependencyCheck.htmlReportPath>
+        <sonar.coverage.exclusions>**/BackendApplication.java,**/FinalProjectLambdaFunction.java
+        </sonar.coverage.exclusions>
 
         <tomcat.version>9.0.31</tomcat.version>
     </properties>

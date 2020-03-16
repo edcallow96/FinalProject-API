@@ -4,9 +4,9 @@ import com.finalproject.backend.model.ProcessJob;
 import org.apache.camel.Processor;
 
 public abstract class PayloadProcessor implements Processor {
-  abstract protected void processCurrentJob(ProcessJob currentProcessJob);
+  protected abstract void processCurrentJob(ProcessJob currentProcessJob);
 
-  abstract protected void succeedCurrentJob(ProcessJob currentProcessJob);
+  protected abstract void succeedCurrentJob(ProcessJob currentProcessJob);
 
-  abstract protected void failCurrentJob(ProcessJob currentProcessJob, String failureReason);
+  protected abstract void failCurrentJob(ProcessJob currentProcessJob, String failureReason);
 }

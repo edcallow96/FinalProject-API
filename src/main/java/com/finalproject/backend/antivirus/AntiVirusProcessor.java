@@ -82,7 +82,7 @@ public class AntiVirusProcessor extends PayloadProcessor {
     return scanResponse.getBody().get("data_id").asText();
   }
 
-  private AntiVirusResponse waitForScanToComplete(String dataId) throws Exception {
+  private AntiVirusResponse waitForScanToComplete(String dataId) throws AntiVirusException {
     ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
     Future<AntiVirusResponse> result = service.submit(() -> {
       AntiVirusResponse antiVirusResponse = null;
@@ -96,7 +96,11 @@ public class AntiVirusProcessor extends PayloadProcessor {
       }
       return antiVirusResponse;
     });
-    return result.get(applicationProperties.getMetaDefenderPollingTimeout(), TimeUnit.MILLISECONDS);
+    try {
+      return result.get(applicationProperties.getMetaDefenderPollingTimeout(), TimeUnit.MILLISECONDS);
+    } catch (Exception e) {
+      throw new AntiVirusException("AV scan was timed out before it completed.", e);
+    }
   }
 
   private AntiVirusResponse getCurrentScanStatus(String dataId) {
@@ -109,7 +113,12 @@ public class AntiVirusProcessor extends PayloadProcessor {
   private void processAntiVirusResponse(AntiVirusResponse antiVirusResponse, File payloadLocation) throws AntiVirusException {
     log.info("Scan results: {}", antiVirusResponse);
     if (antiVirusResponse.getScanResults().getScanResultCode() != 0) {
-      String threatFound = antiVirusResponse.getScanResults().getScanDetails().values().stream().filter(it -> isNotBlank(it.getThreatFound())).findFirst().get().getThreatFound();
+      AntiVirusResponse.ScanDetail engineThatFoundThreat = antiVirusResponse
+          .getScanResults()
+          .getScanDetails()
+          .values()
+          .stream().filter(it -> isNotBlank(it.getThreatFound())).findFirst().orElse(null);
+      String threatFound = engineThatFoundThreat != null ? engineThatFoundThreat.getThreatFound() : "Unknown";
       throw new AntiVirusException(String.format("%s is infected. Threat found %s.", payloadLocation.getName(), threatFound));
     }
   }

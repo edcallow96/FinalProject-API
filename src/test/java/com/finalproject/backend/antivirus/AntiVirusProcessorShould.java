@@ -77,7 +77,7 @@ public class AntiVirusProcessorShould {
     when(applicationProperties.getMetaDefenderPollingDelay()).thenReturn(100);
     dataId = randomAlphabetic(10);
     stubUploadFileResponse();
-    stubScanResultResponse(buildMetaDefenderJsonNodeWithScanProgress(100, 0));
+    stubScanResultResponse(buildMetaDefenderJsonNodeWithScanProgress(100, 0, ""));
   }
 
   @AfterClass
@@ -99,7 +99,7 @@ public class AntiVirusProcessorShould {
 
   @Test
   public void pollForResultsUntilComplete() {
-    stubScanResultResponse(buildMetaDefenderJsonNodeWithScanProgress(0, 0));
+    stubScanResultResponse(buildMetaDefenderJsonNodeWithScanProgress(0, 0, ""));
 
     antiVirusProcessor.process(exchange);
 
@@ -120,7 +120,8 @@ public class AntiVirusProcessorShould {
 
   @Test
   public void failProcessWhenThreatHasBeenDetected() {
-    stubScanResultResponse(buildMetaDefenderJsonNodeWithScanProgress(100, 1));
+    String threatFound = randomAlphabetic(10);
+    stubScanResultResponse(buildMetaDefenderJsonNodeWithScanProgress(100, 1, threatFound));
     antiVirusProcessor.process(exchange);
 
     List<ProcessResult> results = exchange.getIn().getBody(ProcessJob.class).getProcessingResults();
@@ -128,12 +129,25 @@ public class AntiVirusProcessorShould {
     assertThat(results, hasSize(1));
     assertThat(results.get(0).getProcessName(), Matchers.equalTo(ANTI_VIRUS_SCAN));
     assertThat(results.get(0).getProcessStatus(), Matchers.equalTo(FAILED));
-    assertThat(results.get(0).getFailureReason(), Matchers.containsString("Some Malware"));
+    assertThat(results.get(0).getFailureReason(), Matchers.containsString(threatFound));
+  }
+
+  @Test
+  public void setFoundThreatToUnknownWhenNoEngineProvidesIt() {
+    stubScanResultResponse(buildMetaDefenderJsonNodeWithScanProgress(100, 1, ""));
+    antiVirusProcessor.process(exchange);
+
+    List<ProcessResult> results = exchange.getIn().getBody(ProcessJob.class).getProcessingResults();
+
+    assertThat(results, hasSize(1));
+    assertThat(results.get(0).getProcessName(), Matchers.equalTo(ANTI_VIRUS_SCAN));
+    assertThat(results.get(0).getProcessStatus(), Matchers.equalTo(FAILED));
+    assertThat(results.get(0).getFailureReason(), Matchers.containsString("Unknown"));
   }
 
   @Test
   public void failProcessingWhenPollingTimesOut() {
-    stubScanResultResponse(buildMetaDefenderJsonNodeWithScanProgress(99, 0));
+    stubScanResultResponse(buildMetaDefenderJsonNodeWithScanProgress(99, 0, ""));
     antiVirusProcessor.process(exchange);
 
     ProcessJob processJob = exchange.getIn().getBody(ProcessJob.class);
@@ -141,6 +155,7 @@ public class AntiVirusProcessorShould {
     assertThat(processJob.getProcessingResults(), hasSize(1));
     assertThat(processJob.getProcessingResults().get(0).getProcessName(), Matchers.equalTo(ANTI_VIRUS_SCAN));
     assertThat(processJob.getProcessingResults().get(0).getProcessStatus(), Matchers.equalTo(FAILED));
+    assertThat(processJob.getProcessingResults().get(0).getFailureReason(), Matchers.equalTo("AV scan was timed out before it completed."));
   }
 
   private void stubUploadFileResponse() {
@@ -163,14 +178,13 @@ public class AntiVirusProcessorShould {
                     .withHeader("Connection", "close")));
   }
 
-  private JsonNode buildMetaDefenderJsonNodeWithScanProgress(int scanProgress, int scanResult) {
+  private JsonNode buildMetaDefenderJsonNodeWithScanProgress(int scanProgress, int scanResult, String threatFound) {
     ObjectMapper objectMapper = new ObjectMapper();
     ObjectNode metaDefenderResultNode = objectMapper.createObjectNode();
     ObjectNode processInfoNode = objectMapper.createObjectNode();
     ObjectNode scanResultsNode = objectMapper.createObjectNode();
     ObjectNode scanDetailsNode = objectMapper.createObjectNode();
-    scanDetailsNode.set("ClamAv",
-        objectMapper.createObjectNode().put("threat_found", scanResult == 0 ? "" : "Some Malware"));
+    scanDetailsNode.set("ClamAv", objectMapper.createObjectNode().put("threat_found", threatFound));
     scanResultsNode.set("scan_details", scanDetailsNode);
     processInfoNode.put("progress_percentage", scanProgress);
     scanResultsNode.put("scan_all_result_i", scanResult);

@@ -22,21 +22,19 @@ import java.util.List;
 import static j2html.TagCreator.*;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
+import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 
 @Component
 @Slf4j
 public class SuccessNotificationProcessor extends BaseNotificationProcessor {
 
   private final AmazonS3 amazonS3;
-  private final ApplicationProperties applicationProperties;
 
   public SuccessNotificationProcessor(final AmazonS3 amazonS3,
                                       final ApplicationProperties applicationProperties,
                                       final AmazonSimpleEmailService amazonSimpleEmailService) {
     super(amazonSimpleEmailService, applicationProperties);
     this.amazonS3 = amazonS3;
-    this.applicationProperties = applicationProperties;
   }
 
   @Override
@@ -68,7 +66,7 @@ public class SuccessNotificationProcessor extends BaseNotificationProcessor {
 
     bodyContents.addAll(getFileInfoSection(processJob));
 
-    String newFileHash = md5Hex(new FileInputStream(processJob.getPayloadLocation())).toUpperCase();
+    String newFileHash = sha256Hex(new FileInputStream(processJob.getPayloadLocation())).toUpperCase();
     if (!newFileHash.equals(processJob.getOriginalFileHash())) {
       bodyContents.add(p(format("Processed file hash: %s", newFileHash)));
       bodyContents.add(p(format("Processed file size: %s", processJob.getPayloadLocation().length())));
