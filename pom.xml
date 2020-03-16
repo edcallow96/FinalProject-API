@@ -243,7 +243,6 @@
                         <include>**TestSuite.class</include>
                         <forkCount>0</forkCount>
                     </includes>
-                    <argLine>-Xmx1024m</argLine>
                 </configuration>
             </plugin>
             <plugin>
