@@ -104,7 +104,7 @@ public class ThreatRemovalProcessor extends PayloadProcessor {
   }
 
   private String md5Hash(File payloadLocaton) throws IOException {
-    return DigestUtils.sha256Hex(new FileInputStream(payloadLocaton)).toUpperCase();
+    return DigestUtils.md5Hex(new FileInputStream(payloadLocaton)).toUpperCase();
   }
 
   private String attemptToExtractFailureReason(HttpStatusCodeException exception) {
