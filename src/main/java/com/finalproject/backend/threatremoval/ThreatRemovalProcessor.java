@@ -50,12 +50,12 @@ public class ThreatRemovalProcessor extends PayloadProcessor {
   @Override
   protected void processCurrentJob(ProcessJob currentProcessJob) {
     try {
-      log.info("Attempting to sanitise {} with file hash {}", currentProcessJob.getPayloadLocation(), md5Hash(currentProcessJob.getPayloadLocation()));
+      log.info("Attempting to sanitise {} with file hash {}", currentProcessJob.getPayloadLocation(), sha256Hash(currentProcessJob.getPayloadLocation()));
       HttpEntity<FileSystemResource> httpEntity = buildHttpEntity(currentProcessJob);
       uploadFileForSanitisaion(httpEntity, currentProcessJob.getPayloadLocation());
       succeedCurrentJob(currentProcessJob);
       log.info("Sanitisation of file {} was successful. New file hash is {}",
-          currentProcessJob.getPayloadLocation(), md5Hash(currentProcessJob.getPayloadLocation()));
+          currentProcessJob.getPayloadLocation(), sha256Hash(currentProcessJob.getPayloadLocation()));
     } catch (Exception exception) {
       failCurrentJob(currentProcessJob, exception.getMessage());
     }
@@ -103,7 +103,7 @@ public class ThreatRemovalProcessor extends PayloadProcessor {
     }
   }
 
-  private String md5Hash(File payloadLocaton) throws IOException {
+  private String sha256Hash(File payloadLocaton) throws IOException {
     return DigestUtils.sha256Hex(new FileInputStream(payloadLocaton)).toUpperCase();
   }
 
