@@ -22,7 +22,7 @@ import java.util.List;
 import static j2html.TagCreator.*;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
+import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 
 @Component
 @Slf4j
@@ -66,7 +66,7 @@ public class SuccessNotificationProcessor extends BaseNotificationProcessor {
 
     bodyContents.addAll(getFileInfoSection(processJob));
 
-    String newFileHash = sha256Hex(new FileInputStream(processJob.getPayloadLocation())).toUpperCase();
+    String newFileHash = md5Hex(new FileInputStream(processJob.getPayloadLocation())).toUpperCase();
     if (!newFileHash.equals(processJob.getOriginalFileHash())) {
       bodyContents.add(p(format("Processed file hash: %s", newFileHash)));
       bodyContents.add(p(format("Processed file size: %s", processJob.getPayloadLocation().length())));

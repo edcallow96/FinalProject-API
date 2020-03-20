@@ -18,7 +18,7 @@ import java.nio.file.Path;
 
 import static com.finalproject.backend.constants.BackendApplicationConstants.AMAZON_REQUEST_ID;
 import static com.finalproject.backend.constants.BackendApplicationConstants.AMZ_METADATA_USER_ID;
-import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
+import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 
 @Component
 @Slf4j
@@ -56,7 +56,7 @@ public class PrepareJobProcessor implements Processor {
     return ProcessJob.builder()
         .jobId(amazonRequestId)
         .payloadLocation(downloadedFile)
-        .originalFileHash(sha256Hex(new FileInputStream(downloadedFile)).toUpperCase())
+        .originalFileHash(md5Hex(new FileInputStream(downloadedFile)).toUpperCase())
         .originalFileSize(downloadedFile.length())
         .sourceBucket(s3Object.getBucketName())
         .sourceKey(s3Object.getKey())
