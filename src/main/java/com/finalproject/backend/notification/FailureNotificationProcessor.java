@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,9 +39,10 @@ public class FailureNotificationProcessor extends BaseNotificationProcessor {
     }
   }
 
-  private String generateHtmlBody(ProcessJob processJob) {
+  private String generateHtmlBody(ProcessJob processJob) throws IOException {
     ProcessResult failedProcess = processJob.getProcessingResults().stream().filter(it -> it.getProcessStatus() == FAILED).findFirst().orElse(null);
     List<DomContent> bodyContents = new ArrayList<>(asList(
+        getCssStyling(),
         h1(format("Hello %s, your file has failed processing! Details below:", processJob.getUser().getFirstName())),
         h2(format("Job Id: %s", processJob.getJobId()))));
 
