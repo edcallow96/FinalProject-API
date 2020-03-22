@@ -14,7 +14,7 @@ import static com.finalproject.backend.constants.BackendApplicationConstants.*;
 import static org.apache.tika.mime.MediaType.OCTET_STREAM;
 import static org.mockito.Mockito.*;
 
-@MockEndpoints(ENTRY_POINT_ROUTE + "|" + PROCESS_JOB_ROUTE + "|" + JOB_COMPLETION_ROUTE)
+@MockEndpoints(ENTRY_POINT_ROUTE + "|" + PROCESS_JOB_PIPELINE_ROUTE + "|" + JOB_COMPLETION_ROUTE)
 public class LambdaEntryPointRouteSuite extends BaseRouteTest {
 
   @EndpointInject("mock:" + ENTRY_POINT_ROUTE)
@@ -38,8 +38,8 @@ public class LambdaEntryPointRouteSuite extends BaseRouteTest {
   @EndpointInject("mock:" + JOB_COMPLETION_ROUTE)
   private MockEndpoint mockJobCompletionEndpoint;
 
-  @EndpointInject("mock:" + PROCESS_JOB_ROUTE)
-  private MockEndpoint mockProcessJobEndpoint;
+  @EndpointInject("mock:" + PROCESS_JOB_PIPELINE_ROUTE)
+  private MockEndpoint mockProcessJobPipelineEndpoint;
 
   @MockBean
   private PrepareJobProcessor prepareJobProcessor;
@@ -61,7 +61,7 @@ public class LambdaEntryPointRouteSuite extends BaseRouteTest {
   public void entryPointRoutePreparesNormalJobAndSendsToProcessJobRoute() throws Exception {
     when(zipFilePredicate.matches(exchange)).thenReturn(false);
     mockFileIdentificationEndpoint.setExpectedCount(1);
-    mockProcessJobEndpoint.setExpectedCount(1);
+    mockProcessJobPipelineEndpoint.setExpectedCount(1);
     mockUnzipFileEndpoint.setExpectedCount(0);
 
     templateProducer.send(ENTRY_POINT_ROUTE, exchange);
@@ -70,7 +70,7 @@ public class LambdaEntryPointRouteSuite extends BaseRouteTest {
     mockFileIdentificationEndpoint.assertIsSatisfied();
     verify(zipFilePredicate).matches(exchange);
     mockUnzipFileEndpoint.assertIsSatisfied();
-    mockProcessJobEndpoint.assertIsSatisfied();
+    mockProcessJobPipelineEndpoint.assertIsSatisfied();
   }
 
   @Test
@@ -78,7 +78,7 @@ public class LambdaEntryPointRouteSuite extends BaseRouteTest {
     when(zipFilePredicate.matches(exchange)).thenReturn(true);
 
     mockFileIdentificationEndpoint.setExpectedCount(1);
-    mockProcessJobEndpoint.setExpectedCount(0);
+    mockProcessJobPipelineEndpoint.setExpectedCount(0);
     mockUnzipFileEndpoint.setExpectedCount(1);
 
     templateProducer.send(ENTRY_POINT_ROUTE, exchange);
@@ -87,7 +87,7 @@ public class LambdaEntryPointRouteSuite extends BaseRouteTest {
     mockFileIdentificationEndpoint.assertIsSatisfied();
     verify(zipFilePredicate).matches(exchange);
     mockUnzipFileEndpoint.assertIsSatisfied();
-    mockProcessJobEndpoint.assertIsSatisfied();
+    mockProcessJobPipelineEndpoint.assertIsSatisfied();
   }
 
   @Test
@@ -96,7 +96,7 @@ public class LambdaEntryPointRouteSuite extends BaseRouteTest {
     mockThreatRemovalEndpoint.setExpectedCount(1);
     mockAntiVirusEndpoint.setExpectedCount(1);
 
-    templateProducer.send(PROCESS_JOB_ROUTE, exchange);
+    templateProducer.send(PROCESS_JOB_PIPELINE_ROUTE, exchange);
 
     mockFileIdentificationEndpoint.assertIsSatisfied();
     mockThreatRemovalEndpoint.assertIsSatisfied();
@@ -113,7 +113,7 @@ public class LambdaEntryPointRouteSuite extends BaseRouteTest {
     mockThreatRemovalEndpoint.setExpectedCount(1);
     mockAntiVirusEndpoint.setExpectedCount(1);
 
-    templateProducer.send(PROCESS_JOB_ROUTE, exchange);
+    templateProducer.send(PROCESS_JOB_PIPELINE_ROUTE, exchange);
 
     mockFileIdentificationEndpoint.assertIsSatisfied();
     mockThreatRemovalEndpoint.assertIsSatisfied();
@@ -130,7 +130,7 @@ public class LambdaEntryPointRouteSuite extends BaseRouteTest {
     mockThreatRemovalEndpoint.setExpectedCount(0);
     mockAntiVirusEndpoint.setExpectedCount(0);
 
-    templateProducer.send(PROCESS_JOB_ROUTE, exchange);
+    templateProducer.send(PROCESS_JOB_PIPELINE_ROUTE, exchange);
 
     mockFileIdentificationEndpoint.assertIsSatisfied();
     mockThreatRemovalEndpoint.assertIsSatisfied();
@@ -147,7 +147,7 @@ public class LambdaEntryPointRouteSuite extends BaseRouteTest {
     mockThreatRemovalEndpoint.setExpectedCount(0);
     mockAntiVirusEndpoint.setExpectedCount(0);
 
-    templateProducer.send(PROCESS_JOB_ROUTE, exchange);
+    templateProducer.send(PROCESS_JOB_PIPELINE_ROUTE, exchange);
 
     mockFileIdentificationEndpoint.assertIsSatisfied();
     mockThreatRemovalEndpoint.assertIsSatisfied();

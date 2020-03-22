@@ -11,7 +11,7 @@ public class BackendApplicationConstants {
   public static final String ANTI_VIRUS_SCANNING_ROUTE = "direct:avScanningRoute";
   public static final String SEND_FAILURE_NOTIFICATION_ROUTE = "direct:sendFailureNotificationRoute";
   public static final String SEND_SUCCESS_NOTIFICATION_ROUTE = "direct:sendSuccessNotificationRoute";
-  public static final String PROCESS_JOB_ROUTE = "direct:processJobRoute";
+  public static final String PROCESS_JOB_PIPELINE_ROUTE = "direct:processJobPipelineRoute";
   public static final String UNZIP_FILE_ROUTE = "direct:unzipFileRoute";
   public static final String ZIP_FILE_ROUTE = "direct:zipFileRoute";
   public static final String JOB_COMPLETION_ROUTE = "direct:jobCompletionRoute";
