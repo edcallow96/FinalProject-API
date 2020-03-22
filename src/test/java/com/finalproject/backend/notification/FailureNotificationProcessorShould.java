@@ -104,7 +104,7 @@ public class FailureNotificationProcessorShould {
 
     String failureReason = exchange.getIn().getBody(ProcessJob.class).getProcessingResults().get(0).getFailureReason();
 
-    assertThat(document.body().select("p:nth-of-type(4)").toString(), containsString(failureReason));
+    assertThat(document.body().select("p:nth-of-type(5)").toString(), containsString(failureReason));
   }
 
   @Test
@@ -134,8 +134,9 @@ public class FailureNotificationProcessorShould {
     Document document = Jsoup.parse(capturedEmailRequest.getMessage().getBody().getHtml().getData());
 
     assertThat(document.body().select("p:nth-of-type(1)").toString(), containsString(processJob.getSourceKey()));
-    assertThat(document.body().select("p:nth-of-type(2)").toString(), containsString(processJob.getOriginalFileHash()));
-    assertThat(document.body().select("p:nth-of-type(3)").toString(), containsString(Long.toString(processJob.getOriginalFileSize())));
+    assertThat(document.body().select("p:nth-of-type(2)").toString(), containsString(processJob.getContentType().toString()));
+    assertThat(document.body().select("p:nth-of-type(3)").toString(), containsString(processJob.getOriginalFileHash()));
+    assertThat(document.body().select("p:nth-of-type(4)").toString(), containsString(Long.toString(processJob.getOriginalFileSize())));
   }
 
   @Test
@@ -167,7 +168,7 @@ public class FailureNotificationProcessorShould {
     SendEmailRequest capturedEmailRequest = emailRequestArgumentCaptor.getValue();
     Document document = Jsoup.parse(capturedEmailRequest.getMessage().getBody().getHtml().getData());
 
-    assertThat(document.body().select("p:nth-of-type(4)").toString(), containsString("an unexpected failure occurred"));
+    assertThat(document.body().select("p:nth-of-type(5)").toString(), containsString("an unexpected failure occurred"));
   }
 
 }

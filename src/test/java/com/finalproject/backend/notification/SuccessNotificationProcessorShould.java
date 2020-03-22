@@ -186,8 +186,9 @@ public class SuccessNotificationProcessorShould {
     Document document = Jsoup.parse(capturedEmailRequest.getMessage().getBody().getHtml().getData());
 
     assertThat(document.body().select("p:nth-of-type(1)").toString(), containsString(processJob.getSourceKey()));
-    assertThat(document.body().select("p:nth-of-type(2)").toString(), containsString(processJob.getOriginalFileHash()));
-    assertThat(document.body().select("p:nth-of-type(3)").toString(), containsString(Long.toString(processJob.getOriginalFileSize())));
+    assertThat(document.body().select("p:nth-of-type(2)").toString(), containsString(processJob.getContentType().toString()));
+    assertThat(document.body().select("p:nth-of-type(3)").toString(), containsString(processJob.getOriginalFileHash()));
+    assertThat(document.body().select("p:nth-of-type(4)").toString(), containsString(Long.toString(processJob.getOriginalFileSize())));
   }
 
   @Test
@@ -202,8 +203,8 @@ public class SuccessNotificationProcessorShould {
 
     Document document = Jsoup.parse(capturedEmailRequest.getMessage().getBody().getHtml().getData());
 
-    assertThat(document.body().select("p:nth-of-type(4)").toString(), containsString(md5Hex(new FileInputStream(processJob.getPayloadLocation())).toUpperCase()));
-    assertThat(document.body().select("p:nth-of-type(5)").toString(), containsString(Long.toString(processJob.getPayloadLocation().length())));
+    assertThat(document.body().select("p:nth-of-type(5)").toString(), containsString(md5Hex(new FileInputStream(processJob.getPayloadLocation())).toUpperCase()));
+    assertThat(document.body().select("p:nth-of-type(6)").toString(), containsString(Long.toString(processJob.getPayloadLocation().length())));
   }
 
   @Test
@@ -220,8 +221,8 @@ public class SuccessNotificationProcessorShould {
 
     Document document = Jsoup.parse(capturedEmailRequest.getMessage().getBody().getHtml().getData());
 
-    assertThat(document.body().select("p:nth-of-type(4)").toString(), not(containsString(md5Hex(new FileInputStream(processJob.getPayloadLocation())).toUpperCase())));
-    assertThat(document.body().select("p:nth-of-type(5)").toString(), not(containsString(Long.toString(processJob.getPayloadLocation().length()))));
+    assertThat(document.body().select("p:nth-of-type(5)").toString(), not(containsString(md5Hex(new FileInputStream(processJob.getPayloadLocation())).toUpperCase())));
+    assertThat(document.body().select("p:nth-of-type(6)").toString(), not(containsString(Long.toString(processJob.getPayloadLocation().length()))));
   }
 
 
@@ -269,7 +270,7 @@ public class SuccessNotificationProcessorShould {
 
     Document document = Jsoup.parse(capturedEmailRequest.getMessage().getBody().getHtml().getData());
 
-    assertThat(document.body().select("p:nth-of-type(6)").toString(),
+    assertThat(document.body().select("p:nth-of-type(7)").toString(),
         containsString(format("This link will be valid for %s days.", applicationProperties.getSelfSignedUrlExpirationDays())));
   }
 
