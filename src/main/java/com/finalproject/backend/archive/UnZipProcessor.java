@@ -8,9 +8,9 @@ import org.apache.camel.Processor;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 
-import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 
 @Component
@@ -35,7 +35,7 @@ public class UnZipProcessor implements Processor {
   }
 
   private List<ProcessJob> getExtractedFiles(Path destinationDirectory, ProcessJob processJob) {
-    return asList(destinationDirectory.toFile().listFiles()).stream().map(
+    return Arrays.stream(destinationDirectory.toFile().listFiles()).map(
         extractedFile -> ProcessJob.builder()
             .payloadLocation(extractedFile)
             .user(processJob.getUser())

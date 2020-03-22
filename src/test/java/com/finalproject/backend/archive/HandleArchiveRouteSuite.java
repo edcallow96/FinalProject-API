@@ -25,8 +25,8 @@ public class HandleArchiveRouteSuite extends BaseRouteTest {
   @EndpointInject("mock:" + ZIP_FILE_ROUTE)
   private MockEndpoint mockZipFileEndpoint;
 
-  @EndpointInject("mock:" + PROCESS_JOB_ROUTE)
-  private MockEndpoint mockProcessJobEndpoint;
+  @EndpointInject("mock:" + PROCESS_JOB_PIPELINE_ROUTE)
+  private MockEndpoint mockProcessJobPipelineEndpoint;
 
   @EndpointInject("mock:" + JOB_COMPLETION_ROUTE)
   private MockEndpoint mockJobCompletionEndpoint;
@@ -46,12 +46,12 @@ public class HandleArchiveRouteSuite extends BaseRouteTest {
       return null;
     }).when(unZipProcessor).process(exchange);
 
-    mockProcessJobEndpoint.setExpectedCount(10);
+    mockProcessJobPipelineEndpoint.setExpectedCount(10);
     mockZipFileEndpoint.setExpectedCount(10);
     templateProducer.send(UNZIP_FILE_ROUTE, exchange);
 
     verify(unZipProcessor).process(exchange);
-    mockProcessJobEndpoint.assertIsSatisfied();
+    mockProcessJobPipelineEndpoint.assertIsSatisfied();
     mockZipFileEndpoint.assertIsSatisfied();
   }
 

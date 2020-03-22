@@ -28,7 +28,7 @@ public class HandleArchiveRoute extends RouteBuilder {
     from(UNZIP_FILE_ROUTE)
         .process(unZipProcessor)
         .split(body())
-          .to(PROCESS_JOB_ROUTE)
+          .to(PROCESS_JOB_PIPELINE_ROUTE)
           .to(ZIP_FILE_ROUTE);
 
     from(ZIP_FILE_ROUTE)

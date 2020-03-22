@@ -41,11 +41,11 @@ public class LambdaEntryPointRoute extends RouteBuilder {
           .when(isZipFile)
             .to(UNZIP_FILE_ROUTE)
           .otherwise()
-            .to(PROCESS_JOB_ROUTE)
+            .to(PROCESS_JOB_PIPELINE_ROUTE)
             .to(JOB_COMPLETION_ROUTE)
         .end();
 
-    from(PROCESS_JOB_ROUTE)
+    from(PROCESS_JOB_PIPELINE_ROUTE)
         .filter(and(not(jobFailedPredicate), simple("${body.contentType} == null")))
           .to(FILE_IDENTIFICATION_ROUTE)
         .end()
