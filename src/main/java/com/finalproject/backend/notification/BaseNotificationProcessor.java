@@ -7,7 +7,10 @@ import com.finalproject.backend.model.ProcessJob;
 import j2html.tags.DomContent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Processor;
+import org.apache.commons.io.IOUtils;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -42,6 +45,10 @@ public abstract class BaseNotificationProcessor implements Processor {
         .withSource(applicationProperties.getNotificationSenderAddress());
     log.info("Request: {}", request);
     log.info("Email send: {}", amazonSimpleEmailService.sendEmail(request));
+  }
+
+  protected DomContent getCssStyling() throws IOException {
+    return style(IOUtils.toString(getClass().getResourceAsStream("/emailCss.css"), StandardCharsets.UTF_8));
   }
 
   protected List<DomContent> getFileInfoSection(ProcessJob processJob) {

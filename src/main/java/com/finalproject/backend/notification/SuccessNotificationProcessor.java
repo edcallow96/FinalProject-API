@@ -7,7 +7,6 @@ import com.finalproject.backend.model.ProcessJob;
 import j2html.tags.DomContent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +20,6 @@ import java.util.List;
 
 import static j2html.TagCreator.*;
 import static java.lang.String.format;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 
 @Component
@@ -60,7 +58,7 @@ public class SuccessNotificationProcessor extends BaseNotificationProcessor {
 
   private String generateHtmlBody(ProcessJob processJob, URL preSignedUrl) throws IOException {
     List<DomContent> bodyContents = new ArrayList<>(Arrays.asList(
-        style(IOUtils.toString(getClass().getResourceAsStream("/emailCss.css"), UTF_8)),
+        getCssStyling(),
         h1(format("Hello, %s! Here is the link to your processed file:", processJob.getUser().getFirstName())),
         h2(format("Job Id: %s", processJob.getJobId()))));
 
