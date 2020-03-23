@@ -113,6 +113,7 @@ public class ThreatRemovalProcessor extends PayloadProcessor {
     try {
       if (isNotBlank(exception.getResponseBodyAsString())) {
         JsonNode response = new ObjectMapper().readTree(exception.getResponseBodyAsString());
+        log.info(response.toString());
         if (exception.getStatusCode() == TOO_MANY_REQUESTS) {
           failureReason = response.get("error").get("message").asText();
         } else {
