@@ -23,9 +23,9 @@ public class SupportedThreatRemovalTypePredicate implements Predicate {
       "application/vnd.openxmlformats-officedocument.presentationml.presentation",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "application/vnd.ms-powerpoint.presentation.macroEnabled.12",
-      "application/vnd.ms-excel.sheet.macroEnabled.12",
-      "application/vnd.ms-word.document.macroEnabled.12",
+      "application/vnd.ms-powerpoint.presentation.macroenabled.12",
+      "application/vnd.ms-excel.sheet.macroenabled.12",
+      "application/vnd.ms-word.document.macroenabled.12",
       "image/gif",
       "image/bmp",
       "image/jpeg",
@@ -42,7 +42,7 @@ public class SupportedThreatRemovalTypePredicate implements Predicate {
   public boolean matches(Exchange exchange) {
     ProcessJob processJob = exchange.getIn().getBody(ProcessJob.class);
     boolean fileSizeSupported = processJob.getOriginalFileSize() <= applicationProperties.getMaxThreatRemovalFileSize() * BYTES_PER_MEGABYTE;
-    boolean contentTypeSupported = processJob.getContentType() != null && types.contains(processJob.getContentType().toString());
+    boolean contentTypeSupported = processJob.getContentType().toString() != null && types.contains(processJob.getContentType().toString());
     return contentTypeSupported && fileSizeSupported;
   }
 }
