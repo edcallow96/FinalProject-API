@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.tika.mime.MediaType;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
@@ -83,11 +84,15 @@ public class ThreatRemovalProcessor extends PayloadProcessor {
 
   private HttpEntity<FileSystemResource> buildHttpEntity(ProcessJob processJob) {
     HttpHeaders headers = new HttpHeaders();
-    headers.add("Accept", processJob.getContentType().toString() + "," + APPLICATION_JSON);
-    headers.add("Content-Type", processJob.getContentType().toString());
+    headers.add("Accept", getFormattedContentType(processJob.getContentType()) + "," + APPLICATION_JSON);
+    headers.add("Content-Type", getFormattedContentType(processJob.getContentType()));
     headers.add("x-api-key", applicationProperties.getDeepSecureApiKey());
-    headers.add("X-Accept-Preview-Mode-For-Content-Types", processJob.getContentType().toString());
+    headers.add("X-Accept-Preview-Mode-For-Content-Types", getFormattedContentType(processJob.getContentType()));
     return new HttpEntity<>(new FileSystemResource(processJob.getPayloadLocation()), headers);
+  }
+
+  private String getFormattedContentType(MediaType mediaType) {
+    return mediaType.toString().replace("macroenabled", "macroEnabled");
   }
 
   private void uploadFileForSanitisaion(HttpEntity<FileSystemResource> httpEntity, File payloadLocation) throws ThreatRemovalException {

@@ -5,7 +5,6 @@ import com.finalproject.backend.model.ProcessJob;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Predicate;
-import org.apache.tika.mime.MediaType;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -43,17 +42,7 @@ public class SupportedThreatRemovalTypePredicate implements Predicate {
   public boolean matches(Exchange exchange) {
     ProcessJob processJob = exchange.getIn().getBody(ProcessJob.class);
     boolean fileSizeSupported = processJob.getOriginalFileSize() <= applicationProperties.getMaxThreatRemovalFileSize() * BYTES_PER_MEGABYTE;
-    boolean contentTypeSupported = processJob.getContentType().toString() != null && fileTypeSupported(processJob);
+    boolean contentTypeSupported = processJob.getContentType().toString() != null && types.contains(processJob.getContentType().toString());
     return contentTypeSupported && fileSizeSupported;
-  }
-
-  private boolean fileTypeSupported(ProcessJob processJob) {
-    for (String supportedType : types) {
-      if (supportedType.toLowerCase().equals(processJob.getContentType().toString().toLowerCase())) {
-        processJob.setContentType(MediaType.parse(supportedType));
-        return true;
-      }
-    }
-    return false;
   }
 }
