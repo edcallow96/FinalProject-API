@@ -57,6 +57,7 @@ public class ThreatRemovalProcessor extends PayloadProcessor {
       log.info("Sanitisation of file {} was successful. New file hash is {}",
           currentProcessJob.getPayloadLocation(), md5Hash(currentProcessJob.getPayloadLocation()));
     } catch (Exception exception) {
+      log.error("Threat removal failed", exception);
       failCurrentJob(currentProcessJob, exception.getMessage());
     }
   }
