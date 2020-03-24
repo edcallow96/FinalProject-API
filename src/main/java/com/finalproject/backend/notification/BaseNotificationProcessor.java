@@ -54,7 +54,7 @@ public abstract class BaseNotificationProcessor implements Processor {
   protected List<DomContent> getFileInfoSection(ProcessJob processJob) {
     return new ArrayList<>(Arrays.asList(
         h3("File Information:"),
-        p(format("File name: %s", processJob.getSourceKey())),
+        p(format("File name: %s", processJob.getPayloadLocation().getName())),
         p(format("File type: %s", processJob.getContentType())),
         p(format("Original file hash: %s", processJob.getOriginalFileHash())),
         p(format("Original file size: %s", processJob.getOriginalFileSize()))));

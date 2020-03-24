@@ -133,7 +133,7 @@ public class FailureNotificationProcessorShould {
 
     Document document = Jsoup.parse(capturedEmailRequest.getMessage().getBody().getHtml().getData());
 
-    assertThat(document.body().select("p:nth-of-type(1)").toString(), containsString(processJob.getSourceKey()));
+    assertThat(document.body().select("p:nth-of-type(1)").toString(), containsString(processJob.getPayloadLocation().getName()));
     assertThat(document.body().select("p:nth-of-type(2)").toString(), containsString(processJob.getContentType().toString()));
     assertThat(document.body().select("p:nth-of-type(3)").toString(), containsString(processJob.getOriginalFileHash()));
     assertThat(document.body().select("p:nth-of-type(4)").toString(), containsString(Long.toString(processJob.getOriginalFileSize())));
