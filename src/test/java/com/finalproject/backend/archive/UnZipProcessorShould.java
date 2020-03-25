@@ -31,7 +31,6 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsArrayWithSize.arrayWithSize;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.io.FileMatchers.anExistingDirectory;
 
@@ -86,7 +85,7 @@ public class UnZipProcessorShould {
     assertThat(extractedFiles, hasSize(2));
     extractedFiles.forEach(extractedFile -> {
       assertThat(extractedFile.getPayloadLocation(), notNullValue());
-      assertThat(extractedFile.getProcessingResults(), empty());
+      assertThat(extractedFile.getProcessingResults(), hasSize(1));
       assertThat(extractedFile.getJobId(), equalTo(originalProcessJob.getJobId()));
       assertThat(extractedFile.getUser(), equalTo(originalProcessJob.getUser()));
       assertThat(extractedFile.getOriginalFileHash(), equalTo(originalProcessJob.getOriginalFileHash()));
