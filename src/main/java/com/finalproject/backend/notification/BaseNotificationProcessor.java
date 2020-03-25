@@ -4,6 +4,7 @@ import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.model.*;
 import com.finalproject.backend.ApplicationProperties;
 import com.finalproject.backend.model.ProcessJob;
+import com.finalproject.backend.model.ProcessResult;
 import j2html.tags.DomContent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Processor;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 import static j2html.TagCreator.*;
@@ -65,7 +67,7 @@ public abstract class BaseNotificationProcessor implements Processor {
         caption("Processing Results"),
         tr(td("Process name"), td("Process result"),
             each(
-                processJob.getProcessingResults().stream().map(
+                processJob.getProcessingResults().stream().sorted(Comparator.comparing(ProcessResult::getProcessName)).map(
                     processResult ->
                         tr(td(processResult.getProcessName().name()), td(processResult.getProcessStatus().name()))))));
   }
