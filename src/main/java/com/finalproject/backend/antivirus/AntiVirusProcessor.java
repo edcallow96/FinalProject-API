@@ -128,6 +128,7 @@ public class AntiVirusProcessor extends PayloadProcessor {
     headers.add("apiKey", applicationProperties.getMetaDefenderApiKey());
     headers.add("filename", payloadLocation.getName());
     headers.add("content-type", APPLICATION_OCTET_STREAM);
+    headers.add("rule", "multiscan,unarchive");
     return new HttpEntity<>(new FileSystemResource(payloadLocation), headers);
   }
 

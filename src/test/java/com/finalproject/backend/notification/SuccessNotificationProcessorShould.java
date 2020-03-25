@@ -92,8 +92,6 @@ public class SuccessNotificationProcessorShould {
     when(applicationProperties.getNotificationSenderAddress()).thenReturn(randomAlphabetic(10));
 
     when(amazonS3.generatePresignedUrl(anyString(), anyString(), any(Date.class))).thenReturn(new URL("http://" + randomAlphabetic(10)));
-
-
   }
 
   @Test
