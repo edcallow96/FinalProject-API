@@ -64,7 +64,9 @@ public abstract class BaseNotificationProcessor implements Processor {
     return table(
         caption("Processing Results"),
         tr(td("Process name"), td("Process result"),
-            each(processJob.getProcessingResults(),
-                processResult -> tr(td(processResult.getProcessName().name()), td(processResult.getProcessStatus().name())))));
+            each(
+                processJob.getProcessingResults().stream().map(
+                    processResult ->
+                        tr(td(processResult.getProcessName().name()), td(processResult.getProcessStatus().name()))))));
   }
 }
