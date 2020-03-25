@@ -158,6 +158,14 @@ public class AntiVirusProcessorShould {
     assertThat(processJob.getProcessingResults().get(0).getFailureReason(), Matchers.equalTo("AV scan was timed out before it completed."));
   }
 
+  @Test
+  public void uploadFileWithUnArchivingRule() {
+    antiVirusProcessor.process(exchange);
+
+    WireMock.verify(postRequestedFor(urlEqualTo("/file"))
+        .withHeader("rule", WireMock.equalTo("multiscan,unarchive")));
+  }
+
   private void stubUploadFileResponse() {
     stubFor(
         WireMock.post(urlPathMatching("/file"))
