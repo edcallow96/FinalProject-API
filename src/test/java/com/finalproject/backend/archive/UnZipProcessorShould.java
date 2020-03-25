@@ -21,6 +21,9 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Random;
 
+import static com.finalproject.backend.model.ProcessName.UNZIP;
+import static com.finalproject.backend.model.ProcessStatus.FAILED;
+import static com.finalproject.backend.model.ProcessStatus.SUCCESS;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -28,7 +31,6 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsArrayWithSize.arrayWithSize;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.io.FileMatchers.anExistingDirectory;
 
@@ -83,7 +85,7 @@ public class UnZipProcessorShould {
     assertThat(extractedFiles, hasSize(2));
     extractedFiles.forEach(extractedFile -> {
       assertThat(extractedFile.getPayloadLocation(), notNullValue());
-      assertThat(extractedFile.getProcessingResults(), empty());
+      assertThat(extractedFile.getProcessingResults(), hasSize(1));
       assertThat(extractedFile.getJobId(), equalTo(originalProcessJob.getJobId()));
       assertThat(extractedFile.getUser(), equalTo(originalProcessJob.getUser()));
       assertThat(extractedFile.getOriginalFileHash(), equalTo(originalProcessJob.getOriginalFileHash()));
@@ -91,6 +93,34 @@ public class UnZipProcessorShould {
       assertThat(extractedFile.getContentType(), nullValue());
       assertThat(extractedFile.getSourceKey(), equalTo(originalProcessJob.getSourceKey()));
       assertThat(extractedFile.getSourceBucket(), equalTo(originalProcessJob.getSourceBucket()));
+    });
+  }
+
+  @Test
+  public void addSuccessfulProcessingResultsToExtractedProcessJobs() {
+    ProcessJob originalProcessJob = exchange.getIn().getBody(ProcessJob.class);
+    originalProcessJob.getPayloadLocation().delete();
+
+    unZipProcessor.process(exchange);
+
+    assertThat(originalProcessJob.getProcessingResults(), hasSize(1));
+    assertThat(originalProcessJob.getProcessingResults().get(0).getProcessName(), equalTo(UNZIP));
+    assertThat(originalProcessJob.getProcessingResults().get(0).getProcessStatus(), equalTo(FAILED));
+    assertThat(originalProcessJob.getProcessingResults().get(0).getFailureReason(), notNullValue());
+  }
+
+  @Test
+  public void addFailureProcessingResultsWhenUnZipFails() {
+    unZipProcessor.process(exchange);
+
+    List<ProcessJob> extractedProcessJobs = exchange.getIn().getBody(List.class);
+
+    assertThat(extractedProcessJobs, hasSize(2));
+    extractedProcessJobs.forEach(processJob -> {
+      assertThat(processJob.getProcessingResults(), hasSize(1));
+      assertThat(processJob.getProcessingResults().get(0).getProcessName(), equalTo(UNZIP));
+      assertThat(processJob.getProcessingResults().get(0).getProcessStatus(), equalTo(SUCCESS));
+      assertThat(processJob.getProcessingResults().get(0).getFailureReason(), nullValue());
     });
   }
 
