@@ -1,6 +1,7 @@
 package com.finalproject.backend.archive;
 
 import com.finalproject.backend.ApplicationProperties;
+import com.finalproject.backend.handlers.JobFailedPredicate;
 import com.finalproject.backend.model.ProcessJob;
 import com.finalproject.backend.model.ProcessResult;
 import net.lingala.zip4j.ZipFile;
@@ -45,6 +46,9 @@ public class ZipProcessorShould {
   @Mock
   private ApplicationProperties applicationProperties;
 
+  @Mock
+  private JobFailedPredicate jobFailedPredicate;
+
   @InjectMocks
   private ZipProcessor zipProcessor;
 
@@ -65,6 +69,7 @@ public class ZipProcessorShould {
         ))
         .build());
     exchange = ExchangeBuilder.anExchange(new DefaultCamelContext()).withBody(processJobs).build();
+    when(jobFailedPredicate.matches(exchange)).thenReturn(false);
   }
 
   @Test
@@ -130,6 +135,19 @@ public class ZipProcessorShould {
     ProcessJob failedProcessJob = exchange.getIn().getBody(ProcessJob.class);
 
     assertThat(failedProcessJob, notNullValue());
+  }
+
+  @Test
+  public void notIncludeZipProcessingResultsWhenAggregatedJobFailed() {
+    when(jobFailedPredicate.matches(exchange)).thenReturn(true);
+
+    zipProcessor.process(exchange);
+
+    ProcessJob aggregatedProcessJob = exchange.getIn().getBody(ProcessJob.class);
+
+    assertThat(aggregatedProcessJob.getProcessingResults(), hasSize(2));
+    boolean zipProcessingResultPresent = aggregatedProcessJob.getProcessingResults().stream().anyMatch(it -> it.getProcessName() == ZIP);
+    assertThat(zipProcessingResultPresent, equalTo(false));
   }
 
 }
