@@ -2,6 +2,7 @@ package com.finalproject.backend.archive;
 
 import com.finalproject.backend.ApplicationProperties;
 import com.finalproject.backend.common.PayloadProcessor;
+import com.finalproject.backend.handlers.JobFailedPredicate;
 import com.finalproject.backend.model.ProcessJob;
 import com.finalproject.backend.model.ProcessName;
 import com.finalproject.backend.model.ProcessResult;
@@ -31,9 +32,11 @@ import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 public class ZipProcessor extends PayloadProcessor {
 
   private final ApplicationProperties applicationProperties;
+  private final JobFailedPredicate jobFailedPredicate;
 
-  public ZipProcessor(ApplicationProperties applicationProperties) {
+  public ZipProcessor(ApplicationProperties applicationProperties, JobFailedPredicate jobFailedPredicate) {
     this.applicationProperties = applicationProperties;
+    this.jobFailedPredicate = jobFailedPredicate;
   }
 
   @Override
@@ -45,7 +48,9 @@ public class ZipProcessor extends PayloadProcessor {
       ProcessJob processJob = aggregateProcessingResults(processedFiles);
       processJob.setPayloadLocation(zippedFile);
       exchange.getIn().setBody(processJob);
-      succeedCurrentJob(processJob);
+      if (!jobFailedPredicate.matches(exchange)) {
+        succeedCurrentJob(processJob);
+      }
     } catch (Exception e) {
       log.error("Zipping job {} failed", processedFiles.get(0).getJobId(), e);
       failCurrentJob(processedFiles.get(0), e.getMessage());
